@@ -81,16 +81,18 @@ window.openNewListModal = function () {
             <span class="material-symbols-outlined text-outline">chevron_right</span>
           </button>
 
-          <button onclick="window.confirmCreateList(true)" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-primary-fixed hover:opacity-95 transition-opacity text-left border border-primary-fixed-dim group shadow-sm">
-            <div class="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center group-hover:scale-105 transition-transform">
-              <span class="material-symbols-outlined text-[24px]">content_copy</span>
-            </div>
-            <div class="flex-1">
-              <span class="block font-body-lg text-on-surface font-semibold">Basear na Lista Anterior</span>
-              <span class="block text-xs text-on-surface-variant mt-0.5">${activeTitle} (${activeItemCount} itens com histórico de preços)</span>
-            </div>
-            <span class="material-symbols-outlined text-primary font-bold">chevron_right</span>
-          </button>
+          ${store.state.lists && store.state.lists.length > 0 && activeList ? `
+            <button onclick="window.confirmCreateList(true)" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-primary-fixed hover:opacity-95 transition-opacity text-left border border-primary-fixed-dim group shadow-sm">
+              <div class="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center group-hover:scale-105 transition-transform">
+                <span class="material-symbols-outlined text-[24px]">content_copy</span>
+              </div>
+              <div class="flex-1">
+                <span class="block font-body-lg text-on-surface font-semibold">Basear na Lista Anterior</span>
+                <span class="block text-xs text-on-surface-variant mt-0.5">${activeTitle} (${activeItemCount} itens com histórico de preços)</span>
+              </div>
+              <span class="material-symbols-outlined text-primary font-bold">chevron_right</span>
+            </button>
+          ` : ''}
         </div>
       </div>
     </div>
@@ -288,9 +290,10 @@ window.openCheckoutSummaryModal = function (listId) {
   if (!list) return;
 
   const totals = store.calculateListTotals(list);
-  const budget = store.state.monthlyBudget || 600;
-  const budgetDiff = budget - totals.currentTotal;
-  const isOverBudget = budgetDiff < 0;
+  const budget = Number(store.state.monthlyBudget) || 0;
+  const budgetDiff = budget > 0 ? (budget - totals.currentTotal) : 0;
+  const isOverBudget = budget > 0 && budgetDiff < 0;
+  const budgetBarPercent = budget > 0 ? Math.min(100, (totals.currentTotal / budget) * 100) : 0;
 
   // Breakdown by category
   const catBreakdown = {};
@@ -324,17 +327,26 @@ window.openCheckoutSummaryModal = function (listId) {
         <div class="bg-surface-container p-4 rounded-2xl mb-5 border border-outline-variant/40">
           <div class="flex justify-between items-center mb-2">
             <span class="text-xs font-bold text-on-surface-variant uppercase">Orçamento Mensal</span>
-            <span class="text-xs font-semibold text-on-surface">${budget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+            <span class="text-xs font-semibold text-on-surface">${budget > 0 ? budget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'Não definido (R$ 0,00)'}</span>
           </div>
-          <div class="w-full bg-outline-variant/30 h-2.5 rounded-full overflow-hidden mb-2">
-            <div class="h-full rounded-full transition-all duration-500 ${isOverBudget ? 'bg-error' : 'bg-primary-container'}" style="width: ${Math.min(100, (totals.currentTotal / budget) * 100)}%"></div>
-          </div>
-          <div class="flex justify-between items-center text-xs">
-            <span class="text-on-surface-variant">Gasto total: <strong class="text-on-surface">${totals.currentTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></span>
-            <span class="${isOverBudget ? 'text-error font-bold' : 'text-secondary font-bold'}">
-              ${isOverBudget ? `Excedeu ${Math.abs(budgetDiff).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : `Resta ${budgetDiff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
-            </span>
-          </div>
+          ${budget > 0 ? `
+            <div class="w-full bg-outline-variant/30 h-2.5 rounded-full overflow-hidden mb-2">
+              <div class="h-full rounded-full transition-all duration-500 ${isOverBudget ? 'bg-error' : 'bg-primary-container'}" style="width: ${budgetBarPercent}%"></div>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-on-surface-variant">Gasto total: <strong class="text-on-surface">${totals.currentTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></span>
+              <span class="${isOverBudget ? 'text-error font-bold' : 'text-secondary font-bold'}">
+                ${isOverBudget ? `Excedeu ${Math.abs(budgetDiff).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : `Resta ${budgetDiff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
+              </span>
+            </div>
+          ` : `
+            <div class="flex justify-between items-center text-xs pt-1">
+              <span class="text-on-surface-variant">Gasto total previsto: <strong class="text-on-surface">${totals.currentTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></span>
+              <button onclick="window.closeModal(); window.shoppingStore.setActiveTab('settings');" class="text-primary font-bold hover:underline text-xs">
+                Definir meta
+              </button>
+            </div>
+          `}
         </div>
 
         <!-- Category breakdown -->

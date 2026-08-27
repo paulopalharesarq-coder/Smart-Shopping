@@ -73,149 +73,11 @@ const DEFAULT_CATEGORIES = [
   }
 ];
 
-// Initial pantry items for quick addition
-const DEFAULT_PANTRY = [
-  { id: 'p1', name: 'Arroz Branco 5kg', categoryId: 'mercearia', unit: 'unid', defaultPrice: 28.90 },
-  { id: 'p2', name: 'Feijão Carioca 1kg', categoryId: 'mercearia', unit: 'unid', defaultPrice: 8.50 },
-  { id: 'p3', name: 'Óleo de Soja 900ml', categoryId: 'mercearia', unit: 'unid', defaultPrice: 6.80 },
-  { id: 'p4', name: 'Leite Integral 1L', categoryId: 'laticinios', unit: 'unid', defaultPrice: 4.89 },
-  { id: 'p5', name: 'Café Torrado 500g', categoryId: 'mercearia', unit: 'unid', defaultPrice: 17.90 },
-  { id: 'p6', name: 'Detergente Líquido', categoryId: 'limpeza', unit: 'unid', defaultPrice: 2.39 },
-  { id: 'p7', name: 'Papel Higiênico 12un', categoryId: 'higiene', unit: 'pct', defaultPrice: 19.90 },
-  { id: 'p8', name: 'Pão de Forma', categoryId: 'padaria', unit: 'unid', defaultPrice: 7.90 },
-  { id: 'p9', name: 'Ovos Brancos 30un', categoryId: 'hortifruti', unit: 'unid', defaultPrice: 18.00 }
-];
+// Initial pantry items (empty by default)
+const DEFAULT_PANTRY = [];
 
-// Initial lists matching Stitch mockup
-const DEFAULT_LISTS = [
-  {
-    id: 'list-current',
-    title: 'Compras • Fevereiro 2024',
-    subtitle: 'Fevereiro 2024',
-    status: 'in_progress', // 'in_progress' | 'completed'
-    createdAt: '2024-02-01T10:00:00.000Z',
-    completedAt: null,
-    notes: 'Compras mensais essenciais',
-    items: [
-      {
-        id: 'item-1',
-        name: 'Coxão mole',
-        categoryId: 'acougue',
-        quantity: 1,
-        unit: 'kg',
-        currentPrice: 32.50,
-        previousPrice: 28.90,
-        bought: false
-      },
-      {
-        id: 'item-2',
-        name: 'Frango passarinho',
-        categoryId: 'acougue',
-        quantity: 2,
-        unit: 'kg',
-        currentPrice: 14.90,
-        previousPrice: 15.50,
-        bought: false
-      },
-      {
-        id: 'item-3',
-        name: 'Banana prata',
-        categoryId: 'hortifruti',
-        quantity: 6,
-        unit: 'kg',
-        currentPrice: 1.60,
-        previousPrice: 1.50,
-        bought: true
-      },
-      {
-        id: 'item-4',
-        name: 'Maçã fuji',
-        categoryId: 'hortifruti',
-        quantity: 4,
-        unit: 'kg',
-        currentPrice: 8.99,
-        previousPrice: 8.99,
-        bought: false
-      },
-      {
-        id: 'item-5',
-        name: 'Biscoito cream cracker',
-        categoryId: 'mercearia',
-        quantity: 1,
-        unit: 'unid',
-        currentPrice: 3.49,
-        previousPrice: 3.49,
-        bought: false
-      },
-      {
-        id: 'item-6',
-        name: 'Coconut snack crunch',
-        categoryId: 'mercearia',
-        quantity: 2,
-        unit: 'unid',
-        currentPrice: 2.20,
-        previousPrice: 2.00,
-        bought: false
-      },
-      {
-        id: 'item-7',
-        name: 'Leite Semi-desnatado',
-        categoryId: 'laticinios',
-        quantity: 3,
-        unit: 'L',
-        currentPrice: 4.79,
-        previousPrice: 4.99,
-        bought: true
-      },
-      {
-        id: 'item-8',
-        name: 'Queijo Mussarela',
-        categoryId: 'laticinios',
-        quantity: 0.5,
-        unit: 'kg',
-        currentPrice: 44.00,
-        previousPrice: 42.00,
-        bought: false
-      }
-    ]
-  },
-  {
-    id: 'list-jan-2024',
-    title: 'Janeiro 2024',
-    subtitle: 'Janeiro 2024',
-    status: 'completed',
-    createdAt: '2024-01-05T09:00:00.000Z',
-    completedAt: '2024-01-28T18:30:00.000Z',
-    notes: 'Fechamento do mês de Janeiro',
-    itemsCount: 45,
-    totalSpent: 450.20,
-    items: []
-  },
-  {
-    id: 'list-dez-2023',
-    title: 'Dezembro 2023',
-    subtitle: 'Dezembro 2023',
-    status: 'completed',
-    createdAt: '2023-12-02T11:00:00.000Z',
-    completedAt: '2023-12-23T20:00:00.000Z',
-    notes: 'Festa de fim de ano',
-    itemsCount: 62,
-    totalSpent: 890.50,
-    items: []
-  },
-  {
-    id: 'list-nov-2023',
-    title: 'Novembro 2023',
-    subtitle: 'Novembro 2023',
-    status: 'completed',
-    createdAt: '2023-11-04T10:00:00.000Z',
-    completedAt: '2023-11-27T17:00:00.000Z',
-    notes: 'Compras normais',
-    itemsCount: 38,
-    totalSpent: 380.00,
-    items: []
-  }
-];
+// Initial lists (empty by default)
+const DEFAULT_LISTS = [];
 
 class ShoppingStore {
   constructor() {
@@ -233,18 +95,18 @@ class ShoppingStore {
       console.error('Error loading state from localStorage', e);
     }
 
-    // Default state
+    // Default clean state
     return {
       activeTab: 'home', // 'home' | 'cart' | 'categories' | 'history' | 'settings'
-      activeListId: 'list-current',
+      activeListId: null,
       showPreviousPrices: false,
       searchQuery: '',
       selectedCategoryFilter: 'all',
-      monthlyBudget: 600.00,
+      monthlyBudget: 0.00,
       userName: 'Usuário',
       categories: DEFAULT_CATEGORIES,
-      pantry: DEFAULT_PANTRY,
-      lists: DEFAULT_LISTS
+      pantry: [],
+      lists: []
     };
   }
 
@@ -296,9 +158,10 @@ class ShoppingStore {
 
   // Getters
   getActiveList() {
+    if (!this.state.lists || this.state.lists.length === 0) return null;
     const list = this.state.lists.find(l => l.id === this.state.activeListId);
     if (list) return list;
-    return this.state.lists.find(l => l.status === 'in_progress') || this.state.lists[0];
+    return this.state.lists.find(l => l.status === 'in_progress') || this.state.lists[0] || null;
   }
 
   getListById(id) {

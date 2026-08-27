@@ -5,14 +5,14 @@
 
 window.renderSettingsView = function () {
   const store = window.shoppingStore;
-  const budget = store.state.monthlyBudget || 600;
+  const budget = Number(store.state.monthlyBudget) || 0;
 
   return `
     <div class="pb-28">
       <!-- TopAppBar -->
       <header class="bg-background flex justify-between items-center w-full px-5 py-3.5 sticky top-0 z-30">
         <div class="flex items-center gap-2.5">
-          <button onclick="window.shoppingStore.setActiveTab('home')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-95 transition-all">
+          <button onclick="window.shoppingStore.setActiveTab('home')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-95 transition-all" title="Voltar">
             <span class="material-symbols-outlined text-[22px]">arrow_back</span>
           </button>
           <h1 class="font-headline-xl-mobile text-xl font-bold text-on-surface">Perfil & Ajustes</h1>
@@ -47,14 +47,10 @@ window.renderSettingsView = function () {
           <p class="text-xs text-on-surface-variant">
             Abra a câmera do smartphone para escanear o QR Code e instalar este app direto na tela inicial.
           </p>
-          <div class="flex gap-2">
-            <button onclick="window.openMobileConnectModal()" class="flex-1 py-2.5 px-4 bg-primary text-white hover:opacity-95 active:scale-95 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all">
+          <div>
+            <button onclick="window.openMobileConnectModal()" class="w-full py-2.5 px-4 bg-primary text-white hover:opacity-95 active:scale-95 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all">
               <span class="material-symbols-outlined text-[18px]">qr_code_scanner</span>
               Ver QR Code & Instruções
-            </button>
-            <button onclick="window.triggerPWAInstall()" class="py-2.5 px-3 bg-surface-container hover:bg-surface-variant active:scale-95 rounded-xl font-bold text-xs text-primary border border-outline-variant/40 flex items-center justify-center gap-1.5 transition-all">
-              <span class="material-symbols-outlined text-[18px]">download_for_offline</span>
-              Instalar
             </button>
           </div>
         </section>
@@ -72,7 +68,7 @@ window.renderSettingsView = function () {
             <div class="relative flex-1">
               <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-xs font-bold">R$</span>
               <input id="settings-budget-input" type="number" step="10" min="0" value="${budget}" 
-                     class="w-full pl-10 pr-4 py-2.5 bg-surface rounded-xl border border-outline-variant/50 focus:border-primary focus:outline-none text-on-surface font-bold text-sm">
+                     class="w-full pl-10 pr-4 py-2.5 bg-surface rounded-xl border border-outline-variant/50 focus:border-primary focus:outline-none text-on-surface font-bold text-sm" placeholder="0,00">
             </div>
             <button onclick="window.saveBudgetSetting()" class="px-4 py-2.5 bg-primary-container text-on-primary-container font-bold text-xs rounded-xl hover:opacity-90 active:scale-95 shadow-sm">
               Salvar
@@ -107,13 +103,13 @@ window.renderSettingsView = function () {
         <section class="p-4 bg-error-container/40 rounded-2xl border border-error/20 space-y-2">
           <h4 class="font-label-caps text-xs font-bold text-tertiary uppercase flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[16px]">restart_alt</span>
-            Redefinir Dados de Demonstração
+            Redefinir Dados do App
           </h4>
           <p class="text-xs text-on-surface-variant">
-            Restaura as listas, itens e categorias padrão exportados do Stitch.
+            Limpa todas as listas e despensa, restaurando as categorias padrão.
           </p>
           <button onclick="window.confirmResetData()" class="px-4 py-2 bg-error-container text-on-error-container hover:bg-error/20 rounded-xl font-bold text-xs transition-colors">
-            Restaurar Demonstração
+            Redefinir Tudo
           </button>
         </section>
       </main>
@@ -124,7 +120,7 @@ window.renderSettingsView = function () {
 window.saveBudgetSetting = function () {
   const input = document.getElementById('settings-budget-input');
   if (input) {
-    const val = parseFloat(input.value) || 600;
+    const val = parseFloat(input.value) || 0;
     window.shoppingStore.setMonthlyBudget(val);
     window.showToast('Orçamento atualizado!', 'success');
   }

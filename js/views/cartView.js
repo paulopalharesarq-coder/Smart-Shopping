@@ -11,13 +11,39 @@ window.renderCartView = function () {
 
   if (!list) {
     return `
-      <div class="p-6 text-center pt-20">
-        <span class="material-symbols-outlined text-5xl text-outline mb-3">shopping_cart_off</span>
-        <h2 class="font-headline-md text-on-surface">Nenhuma lista selecionada</h2>
-        <p class="text-sm text-on-surface-variant mt-1 mb-6">Crie uma nova lista para começar suas compras.</p>
-        <button onclick="window.openNewListModal()" class="px-6 py-3 bg-primary-container text-on-primary-container rounded-xl font-bold">
-          Criar Nova Lista
-        </button>
+      <div class="pb-28">
+        <!-- TopAppBar -->
+        <header class="bg-background flex justify-between items-center w-full px-5 py-3.5 sticky top-0 z-30">
+          <div class="flex items-center gap-2.5">
+            <button onclick="window.shoppingStore.setActiveTab('home')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-95 transition-all" title="Voltar ao início">
+              <span class="material-symbols-outlined text-[22px]">arrow_back</span>
+            </button>
+            <div>
+              <h1 class="font-headline-xl-mobile text-xl font-bold text-on-surface leading-tight">Carrinho</h1>
+              <span class="text-on-surface-variant text-xs font-medium">0 itens</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Empty State Canvas -->
+        <main class="px-5 pt-8 text-center flex flex-col items-center justify-center">
+          <div class="w-20 h-20 rounded-full bg-surface-container flex items-center justify-center text-outline mb-4">
+            <span class="material-symbols-outlined text-4xl">shopping_cart_off</span>
+          </div>
+          <h2 class="font-headline-md text-lg font-bold text-on-surface">Nenhuma lista ativa</h2>
+          <p class="text-xs text-on-surface-variant mt-1 mb-6 max-w-xs leading-relaxed">
+            Você ainda não possui nenhuma lista de compras criada. Crie uma nova lista para começar a adicionar itens ao carrinho.
+          </p>
+          <div class="flex flex-col gap-2.5 w-full max-w-xs">
+            <button onclick="window.openNewListModal()" class="w-full py-3.5 bg-primary-container text-on-primary-container rounded-xl font-bold text-sm shadow-md hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+              Criar Nova Lista
+            </button>
+            <button onclick="window.shoppingStore.setActiveTab('home')" class="w-full py-2.5 bg-surface-container text-on-surface rounded-xl font-semibold text-xs hover:bg-surface-variant transition-colors">
+              Voltar ao Início
+            </button>
+          </div>
+        </main>
       </div>
     `;
   }

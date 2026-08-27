@@ -6,7 +6,7 @@
 window.renderHistoryView = function () {
   const store = window.shoppingStore;
   const lists = store.state.lists || [];
-  const budget = store.state.monthlyBudget || 600;
+  const budget = Number(store.state.monthlyBudget) || 0;
 
   // Calculate monthly stats
   const monthlyStats = lists.map(l => {
@@ -27,10 +27,10 @@ window.renderHistoryView = function () {
   const avgMonthlySpent = monthlyStats.length > 0 ? (totalYearSpent / monthlyStats.length) : 0;
 
   // Render monthly comparison chart bars
-  const chartBarsHtml = monthlyStats.map(m => {
+  const chartBarsHtml = monthlyStats.length > 0 ? monthlyStats.map(m => {
     const heightPercent = Math.min(100, Math.round((m.total / maxMonthTotal) * 100));
     const isCurrent = m.status === 'in_progress';
-    const isOverBudget = m.total > budget;
+    const isOverBudget = budget > 0 && m.total > budget;
 
     return `
       <div onclick="window.shoppingStore.setActiveList('${m.id}'); window.shoppingStore.setActiveTab('cart');" 
@@ -45,14 +45,18 @@ window.renderHistoryView = function () {
         <span class="text-[10px] font-bold text-on-surface-variant mt-2 text-center truncate max-w-[50px]">${m.subtitle.split(' ')[0]}</span>
       </div>
     `;
-  }).join('');
+  }).join('') : `
+    <div class="w-full text-center py-8 text-xs text-on-surface-variant">
+      Nenhum histórico de compras registrado ainda.
+    </div>
+  `;
 
   return `
     <div class="pb-28">
       <!-- TopAppBar -->
       <header class="bg-background flex justify-between items-center w-full px-5 py-3.5 sticky top-0 z-30">
         <div class="flex items-center gap-2.5">
-          <button onclick="window.shoppingStore.setActiveTab('home')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-95 transition-all">
+          <button onclick="window.shoppingStore.setActiveTab('home')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-95 transition-all" title="Voltar">
             <span class="material-symbols-outlined text-[22px]">arrow_back</span>
           </button>
           <h1 class="font-headline-xl-mobile text-xl font-bold text-on-surface">Histórico & Análises</h1>
@@ -71,14 +75,14 @@ window.renderHistoryView = function () {
             <span class="text-xl font-bold text-on-surface block">${avgMonthlySpent.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
             <span class="text-[11px] text-secondary font-semibold mt-0.5 block flex items-center gap-0.5">
               <span class="material-symbols-outlined text-[14px]">check_circle</span>
-              ${monthlyStats.length} meses registrados
+              ${monthlyStats.length} ${monthlyStats.length === 1 ? 'mês registrado' : 'meses registrados'}
             </span>
           </div>
 
           <div class="bg-primary-fixed rounded-2xl p-4 border border-primary-fixed-dim/50">
             <span class="text-[11px] font-bold uppercase text-primary tracking-wider block mb-1">Meta Orçamentária</span>
             <span class="text-xl font-bold text-on-surface block">${budget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-            <span class="text-[11px] text-primary font-semibold mt-0.5 block">por mês</span>
+            <span class="text-[11px] text-primary font-semibold mt-0.5 block">${budget > 0 ? 'por mês' : 'não definido'}</span>
           </div>
         </div>
 
@@ -87,16 +91,18 @@ window.renderHistoryView = function () {
           <div class="flex justify-between items-center mb-4">
             <div>
               <h2 class="font-headline-md text-sm font-bold text-on-surface">Evolução Mensal de Gastos</h2>
-              <span class="text-xs text-on-surface-variant">Toque em uma barra para abrir os itens</span>
+              <span class="text-xs text-on-surface-variant">${monthlyStats.length > 0 ? 'Toque em uma barra para abrir os itens' : 'Crie listas para acompanhar seus gastos'}</span>
             </div>
-            <div class="flex items-center gap-2 text-[11px]">
-              <span class="inline-flex items-center gap-1 font-semibold text-primary">
-                <span class="w-2 h-2 rounded-full bg-primary"></span> Atual
-              </span>
-              <span class="inline-flex items-center gap-1 font-semibold text-outline">
-                <span class="w-2 h-2 rounded-full bg-primary-container"></span> Passados
-              </span>
-            </div>
+            ${monthlyStats.length > 0 ? `
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="inline-flex items-center gap-1 font-semibold text-primary">
+                  <span class="w-2 h-2 rounded-full bg-primary"></span> Atual
+                </span>
+                <span class="inline-flex items-center gap-1 font-semibold text-outline">
+                  <span class="w-2 h-2 rounded-full bg-primary-container"></span> Passados
+                </span>
+              </div>
+            ` : ''}
           </div>
 
           <div class="flex items-end justify-between gap-2 pt-4 pb-2 border-b border-outline-variant/30">
@@ -117,7 +123,7 @@ window.renderHistoryView = function () {
           </h2>
           
           <div class="space-y-2.5">
-            ${monthlyStats.map(m => `
+            ${monthlyStats.length > 0 ? monthlyStats.map(m => `
               <div class="bg-surface-container rounded-xl p-3.5 flex justify-between items-center border border-outline-variant/30 hover:bg-surface-variant transition-colors">
                 <div class="flex items-center gap-3">
                   <div class="w-9 h-9 rounded-xl ${m.status === 'in_progress' ? 'bg-primary text-white' : 'bg-surface-container-high text-on-surface-variant'} flex items-center justify-center font-bold">
@@ -137,7 +143,13 @@ window.renderHistoryView = function () {
                   </button>
                 </div>
               </div>
-            `).join('')}
+            `).join('') : `
+              <div class="text-center py-6 bg-surface-container/40 rounded-2xl border border-dashed border-outline-variant/40 p-4">
+                <span class="material-symbols-outlined text-3xl text-outline mb-1">history</span>
+                <h4 class="font-body-lg text-xs font-bold text-on-surface">Nenhuma lista registrada</h4>
+                <p class="text-[11px] text-on-surface-variant mt-0.5">As compras criadas e finalizadas aparecerão aqui no histórico.</p>
+              </div>
+            `}
           </div>
         </section>
       </main>

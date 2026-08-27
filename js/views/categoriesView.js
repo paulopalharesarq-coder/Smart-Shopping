@@ -32,7 +32,7 @@ window.renderCategoriesView = function () {
     `;
   }).join('');
 
-  const pantryListHtml = pantry.map(p => {
+  const pantryListHtml = pantry.length > 0 ? pantry.map(p => {
     const cat = store.getCategoryById(p.categoryId);
     return `
       <div class="flex items-center justify-between p-3 bg-surface-container rounded-xl border border-outline-variant/30 hover:bg-surface-variant transition-colors">
@@ -59,22 +59,28 @@ window.renderCategoriesView = function () {
         </div>
       </div>
     `;
-  }).join('');
+  }).join('') : `
+    <div class="py-6 text-center bg-surface-container/40 rounded-2xl border border-dashed border-outline-variant/40 p-4">
+      <span class="material-symbols-outlined text-3xl text-outline mb-1">inventory_2</span>
+      <h4 class="font-body-lg text-xs font-bold text-on-surface">Nenhum item na despensa</h4>
+      <p class="text-[11px] text-on-surface-variant mt-0.5 mb-3">Cadastre seus itens frequentes para adicioná-los rapidamente ao carrinho.</p>
+      <button onclick="window.openNewPantryModal()" class="px-3 py-1.5 bg-primary-container text-on-primary-container rounded-xl font-bold text-xs inline-flex items-center gap-1 shadow-sm hover:opacity-90 active:scale-95 transition-all">
+        <span class="material-symbols-outlined text-[14px]">add</span>
+        Cadastrar Item
+      </button>
+    </div>
+  `;
 
   return `
     <div class="pb-28">
       <!-- TopAppBar -->
       <header class="bg-background flex justify-between items-center w-full px-5 py-3.5 sticky top-0 z-30">
         <div class="flex items-center gap-2.5">
-          <button onclick="window.shoppingStore.setActiveTab('home')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-95 transition-all">
+          <button onclick="window.shoppingStore.setActiveTab('home')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-95 transition-all" title="Voltar">
             <span class="material-symbols-outlined text-[22px]">arrow_back</span>
           </button>
           <h1 class="font-headline-xl-mobile text-xl font-bold text-on-surface">Categorias</h1>
         </div>
-
-        <button onclick="window.openCategoryModal()" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-primary" title="Nova Categoria">
-          <span class="material-symbols-outlined text-[24px]">add_circle</span>
-        </button>
       </header>
 
       <!-- Main Content -->
