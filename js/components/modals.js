@@ -527,10 +527,11 @@ window.closeModal = function () {
 
 // Open Mobile Connect & PWA QR Code Modal
 window.openMobileConnectModal = async function () {
-  let hostUrl = window.location.origin;
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  let hostUrl = window.location.origin + window.location.pathname;
   
   // Try fetching the local network IP from our Node server if on localhost
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  if (isLocal) {
     try {
       const res = await fetch('/api/network-info');
       if (res.ok) {
@@ -567,13 +568,23 @@ window.openMobileConnectModal = async function () {
           </button>
         </div>
 
-        <!-- Wi-Fi Alert Reminder -->
+        ${isLocal ? `
+        <!-- Wi-Fi Alert Reminder for Localhost -->
         <div class="p-3 bg-primary-fixed/50 border border-primary-fixed-dim/60 rounded-2xl mb-4 flex items-start gap-2.5">
           <span class="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">wifi</span>
           <p class="text-xs text-on-surface leading-relaxed">
             Certifique-se de que o seu celular está conectado na <strong>mesma rede Wi-Fi</strong> do computador.
           </p>
         </div>
+        ` : `
+        <!-- Cloud Production Info -->
+        <div class="p-3 bg-secondary-fixed/50 border border-secondary-fixed-dim/60 rounded-2xl mb-4 flex items-start gap-2.5">
+          <span class="material-symbols-outlined text-secondary text-[20px] shrink-0 mt-0.5">cloud_done</span>
+          <p class="text-xs text-on-surface leading-relaxed">
+            App online na nuvem! Escaneie o QR Code abaixo com a câmera do celular para abrir e instalar diretamente.
+          </p>
+        </div>
+        `}
 
         <!-- QR Code Card -->
         <div class="flex flex-col items-center justify-center p-5 bg-surface-container rounded-2xl border border-outline-variant/30 mb-5 text-center">

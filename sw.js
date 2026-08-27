@@ -3,13 +3,14 @@
  * Provides robust offline functionality, instant loads and asset caching.
  */
 
-const CACHE_NAME = 'minhas-compras-v1.0.2';
+const CACHE_NAME = 'minhas-compras-v1.0.3';
 
 const PRECACHE_ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
   './css/app.css',
+  './js/lib/qrcode.js',
   './js/store.js',
   './js/app.js',
   './js/components/totalBar.js',

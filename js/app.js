@@ -130,8 +130,8 @@ function renderApp() {
   `;
 }
 
-// Initialize on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize on DOM ready or immediately if already loaded
+function initApp() {
   renderApp();
   window.shoppingStore.subscribe(() => {
     renderApp();
@@ -143,5 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
       window.closeModal();
     }
   });
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
+
 

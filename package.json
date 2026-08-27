@@ -1,0 +1,10 @@
+{
+  "name": "stitch-smart-monthly-shopping-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minhas Compras - Gerenciador Inteligente de Compras Mensais PWA",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  }
+}
