@@ -9,7 +9,7 @@ const path = require('path');
 const os = require('os');
 
 const PORT = process.env.PORT || 3000;
-const ROOT_DIR = __dirname;
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',

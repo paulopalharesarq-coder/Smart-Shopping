@@ -4,7 +4,7 @@
   "private": true,
   "description": "Minhas Compras - Gerenciador Inteligente de Compras Mensais PWA",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node scripts/server.js",
+    "dev": "node scripts/server.js"
   }
 }
