@@ -173,6 +173,7 @@ const vercelJson = JSON.parse(fs.readFileSync(path.join(__dirname, '../vercel.js
 
 assert(buildScript.includes('CACHE_NAME'), 'scripts/build.js gerencia CACHE_NAME');
 assert(vercelJson.buildCommand === 'node scripts/build.js', 'vercel.json executa "node scripts/build.js" no build');
+assert(vercelJson.outputDirectory === '.', 'vercel.json define outputDirectory como "." (raiz do projeto)');
 
 console.log('\n====================================================');
 console.log(`📊 RESULTADO FINAL: ${testsPassed} PASSOU | ${testsFailed} FALHOU`);
