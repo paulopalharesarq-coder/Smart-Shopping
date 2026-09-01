@@ -181,13 +181,50 @@
   <script src="js/views/settingsView.js"></script>
   <script src="js/app.js"></script>
 
-  <!-- Service Worker Registration -->
+  <!-- Service Worker Registration & Auto-Update Engine -->
   <script>
     if ('serviceWorker' in navigator) {
+      let isRefreshing = false;
+
+      // When the service worker controlling this page changes, reload cleanly to load fresh bundle
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!isRefreshing) {
+          isRefreshing = true;
+          console.log('[PWA] Nova versão ativada! Atualizando aplicação...');
+          window.location.reload();
+        }
+      });
+
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
           .then((reg) => {
             console.log('[PWA] Service Worker registrado com sucesso! Escopo:', reg.scope);
+
+            // Proactively check for SW updates
+            reg.update().catch(() => {});
+
+            // Handle when a new worker is found
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('[PWA] Nova versão pronta! Solicitando ativação imediata...');
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  }
+                });
+              }
+            });
+
+            // iOS PWA & Mobile Foreground Check: Check for updates when app gains focus or becomes visible
+            document.addEventListener('visibilitychange', () => {
+              if (document.visibilityState === 'visible') {
+                reg.update().catch(() => {});
+              }
+            });
+            window.addEventListener('focus', () => {
+              reg.update().catch(() => {});
+            });
           })
           .catch((err) => {
             console.warn('[PWA] Falha ao registrar Service Worker:', err);

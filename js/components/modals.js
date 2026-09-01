@@ -44,9 +44,12 @@ window.adjustModalQty = function (delta) {
 // Open New List Modal / Bottom Sheet
 window.openNewListModal = function () {
   const store = window.shoppingStore;
-  const activeList = store.getActiveList();
-  const activeTitle = activeList ? activeList.title : 'Nenhuma lista anterior';
-  const activeItemCount = activeList && activeList.items ? activeList.items.length : 0;
+  const lists = store.state.lists || [];
+  const mostRecentList = lists.length > 0
+    ? [...lists].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0]
+    : null;
+  const activeTitle = mostRecentList ? mostRecentList.title : 'Nenhuma lista anterior';
+  const activeItemCount = mostRecentList && mostRecentList.items ? mostRecentList.items.length : 0;
 
   const currentMonthName = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   const capitalizedMonth = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
@@ -81,8 +84,8 @@ window.openNewListModal = function () {
             <span class="material-symbols-outlined text-outline">chevron_right</span>
           </button>
 
-          ${store.state.lists && store.state.lists.length > 0 && activeList ? `
-            <button onclick="window.confirmCreateList(true)" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-primary-fixed hover:opacity-95 transition-opacity text-left border border-primary-fixed-dim group shadow-sm">
+          ${mostRecentList && mostRecentList.items && mostRecentList.items.length > 0 ? `
+            <button onclick="window.confirmCreateList(true, '${mostRecentList.id}')" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-primary-fixed hover:opacity-95 transition-opacity text-left border border-primary-fixed-dim group shadow-sm">
               <div class="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center group-hover:scale-105 transition-transform">
                 <span class="material-symbols-outlined text-[24px]">content_copy</span>
               </div>
@@ -101,12 +104,12 @@ window.openNewListModal = function () {
   document.getElementById('modal-container').innerHTML = modalHtml;
 };
 
-window.confirmCreateList = function (baseOnPrevious) {
+window.confirmCreateList = function (baseOnPrevious, sourceListId = null) {
   const input = document.getElementById('new-list-title-input');
   const title = input ? input.value.trim() : '';
-  window.shoppingStore.createNewList(title, baseOnPrevious);
+  window.shoppingStore.createNewList(title, baseOnPrevious, sourceListId);
   window.closeModal();
-  window.showToast(baseOnPrevious ? 'Lista criada com itens clonados!' : 'Nova lista vazia criada!', 'success');
+  window.showToast(baseOnPrevious ? 'Lista criada com itens clonados e preços zerados!' : 'Nova lista vazia criada!', 'success');
 };
 
 // Helper to update visual radio selection state
@@ -535,9 +538,11 @@ window.saveItem = function (e, listId, itemId) {
 
   const quantity = parseFloat(document.getElementById('item-qty-input').value) || 1;
   const unit = document.getElementById('item-unit-input').value || 'unid';
-  const currentPrice = parseFloat(document.getElementById('item-price-input').value) || 0;
+  
+  const priceInputVal = document.getElementById('item-price-input').value;
+  const currentPrice = (priceInputVal !== '' && !isNaN(parseFloat(priceInputVal))) ? parseFloat(priceInputVal) : null;
   const prevPriceVal = document.getElementById('item-prev-price-input').value;
-  const previousPrice = prevPriceVal ? parseFloat(prevPriceVal) : currentPrice;
+  const previousPrice = (prevPriceVal !== '' && !isNaN(parseFloat(prevPriceVal))) ? parseFloat(prevPriceVal) : (currentPrice !== null ? currentPrice : null);
 
   if (itemId && itemId !== 'null') {
     window.shoppingStore.updateItemDetails(listId, itemId, {
@@ -679,10 +684,10 @@ window.openCheckoutSummaryModal = function (listId) {
             Compartilhar Lista no WhatsApp
           </button>
           
-          ${list.status === 'in_progress' ? `
+          ${list.status !== 'completed' ? `
             <button onclick="window.finishList('${list.id}')" class="w-full py-3.5 rounded-xl bg-primary-container text-on-primary-container font-bold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-md">
               <span class="material-symbols-outlined text-[20px]">task_alt</span>
-              Finalizar e Arquivar Compra
+              Finalizar
             </button>
           ` : ''}
         </div>
@@ -751,10 +756,10 @@ window.shareWhatsApp = function (listId) {
 };
 
 window.finishList = function (listId) {
-  if (confirm('Deseja finalizar esta lista de compras e arquivá-la no histórico?')) {
+  if (confirm('Deseja finalizar esta lista de compras?')) {
     window.shoppingStore.completeActiveList(listId);
     window.closeModal();
-    window.showToast('Compra finalizada e salva no histórico!', 'success');
+    window.showToast('Compra finalizada com sucesso!', 'success');
   }
 };
 
@@ -1039,6 +1044,21 @@ window.openListActionsMenu = function (listId, e) {
         </div>
 
         <div class="space-y-2">
+          ${list.status !== 'completed' ? `
+            <!-- Finalize Option -->
+            <button onclick="window.closeModal(); window.finishList('${list.id}')" 
+                    class="w-full flex items-center gap-3.5 p-3.5 rounded-2xl bg-secondary-container/40 hover:bg-secondary-container text-on-surface transition-all text-left font-semibold active:scale-[0.99] border border-secondary/20">
+              <div class="w-10 h-10 rounded-xl bg-secondary text-white flex items-center justify-center">
+                <span class="material-symbols-outlined text-[20px]">task_alt</span>
+              </div>
+              <div class="flex-1">
+                <span class="block text-sm font-bold text-on-surface">Finalizar Lista</span>
+                <span class="block text-[11px] text-on-surface-variant">Concluir compra e mover para o histórico</span>
+              </div>
+              <span class="material-symbols-outlined text-secondary text-[20px]">chevron_right</span>
+            </button>
+          ` : ''}
+
           <!-- Rename Option -->
           <button onclick="window.closeModal(); window.openRenameListModal('${list.id}')" 
                   class="w-full flex items-center gap-3.5 p-3.5 rounded-2xl bg-surface-container hover:bg-surface-variant text-on-surface transition-all text-left font-semibold active:scale-[0.99]">

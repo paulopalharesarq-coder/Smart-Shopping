@@ -85,11 +85,13 @@ window.renderCartView = function () {
     });
 
     return sortedItems.map(item => {
-      const curPrice = Number(item.currentPrice) || 0;
-      const prevPrice = Number(item.previousPrice) || curPrice;
+      const hasCurPrice = item.currentPrice !== null && item.currentPrice !== undefined && item.currentPrice !== '' && Number(item.currentPrice) > 0;
+      const curPrice = hasCurPrice ? Number(item.currentPrice) : 0;
+      const hasPrevPrice = item.previousPrice !== null && item.previousPrice !== undefined && item.previousPrice !== '' && Number(item.previousPrice) > 0;
+      const prevPrice = hasPrevPrice ? Number(item.previousPrice) : 0;
       const qty = Number(item.quantity) || 1;
       const subtotal = qty * curPrice;
-      const isMissingPrice = curPrice <= 0;
+      const isMissingPrice = !hasCurPrice;
 
       // Price comparison badge
       let priceDiffHtml = '';
@@ -298,13 +300,13 @@ window.renderCartView = function () {
             </div>
             <div>
               <span class="font-bold text-sm text-on-surface block">${list.title}</span>
-              <span class="text-[11px] text-on-surface-variant">${list.status === 'in_progress' ? 'Lista ativa de compras' : 'Lista arquivada'}</span>
+              <span class="text-[11px] text-on-surface-variant">${list.status !== 'completed' ? 'Lista ativa de compras' : 'Lista finalizada'}</span>
             </div>
           </div>
           
           <select onchange="window.shoppingStore.setActiveList(this.value)" class="bg-surface-variant text-on-surface text-xs font-bold py-1.5 px-3 rounded-xl border-none focus:outline-none cursor-pointer">
-            ${store.state.lists.map(l => `
-              <option value="${l.id}" ${l.id === list.id ? 'selected' : ''}>${l.title}</option>
+            ${[...(store.state.lists || [])].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).map(l => `
+              <option value="${l.id}" ${l.id === list.id ? 'selected' : ''}>${l.title}${l.status === 'completed' ? ' (Finalizada)' : ''}</option>
             `).join('')}
           </select>
         </div>

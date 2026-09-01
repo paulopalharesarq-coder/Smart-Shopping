@@ -5,57 +5,74 @@
 
 window.renderHomeView = function () {
   const store = window.shoppingStore;
-  const lists = store.state.lists;
-  const activeList = store.getActiveList();
-  const pastLists = lists.filter(l => l.id !== activeList?.id);
+  const lists = store.state.lists || [];
 
-  let activeListCardHtml = '';
-  if (activeList) {
-    const totals = store.calculateListTotals(activeList);
-    const formattedTotal = totals.currentTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  // Strictly separate current and past lists by completion status
+  const currentLists = lists.filter(l => l.status !== 'completed');
+  const pastLists = lists.filter(l => l.status === 'completed');
 
-    activeListCardHtml = `
-      <div class="bg-primary-fixed rounded-2xl p-4 transition-all shadow-sm border border-primary-fixed-dim/50 group">
-        <div class="flex justify-between items-start mb-3">
-          <div onclick="window.shoppingStore.setActiveList('${activeList.id}'); window.shoppingStore.setActiveTab('cart');" class="cursor-pointer flex-1">
-            <div class="flex items-center gap-1.5 mb-1">
-              <span class="inline-block w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-              <span class="text-[11px] font-bold uppercase tracking-wider text-primary">Em andamento</span>
+  // Sort both by createdAt descending (newest first)
+  const sortByCreatedAtDesc = (a, b) => {
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return timeB - timeA;
+  };
+  currentLists.sort(sortByCreatedAtDesc);
+  pastLists.sort(sortByCreatedAtDesc);
+
+  let currentListsHtml = '';
+  if (currentLists.length > 0) {
+    currentListsHtml = `
+      <div class="space-y-3">
+        ${currentLists.map(activeList => {
+          const totals = store.calculateListTotals(activeList);
+          const formattedTotal = totals.currentTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+          return `
+            <div class="bg-primary-fixed rounded-2xl p-4 transition-all shadow-sm border border-primary-fixed-dim/50 group">
+              <div class="flex justify-between items-start mb-3">
+                <div onclick="window.shoppingStore.setActiveList('${activeList.id}'); window.shoppingStore.setActiveTab('cart');" class="cursor-pointer flex-1">
+                  <div class="flex items-center gap-1.5 mb-1">
+                    <span class="inline-block w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-primary">Em andamento</span>
+                  </div>
+                  <h3 class="font-body-lg text-lg font-bold text-on-surface group-hover:text-primary transition-colors">${activeList.title}</h3>
+                  <p class="font-body-sm text-xs text-on-surface-variant mt-0.5">${totals.totalItems} ${totals.totalItems === 1 ? 'item no carrinho' : 'itens no carrinho'}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="text-right">
+                    <span class="font-price-display text-xl font-bold text-on-surface block">${formattedTotal}</span>
+                    <span class="text-[11px] text-on-surface-variant">total previsto</span>
+                  </div>
+                  <!-- 3 Pontinhos Menu for Active List -->
+                  <button onclick="window.openListActionsMenu('${activeList.id}', event)" 
+                          class="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-black/5 active:scale-90 transition-all -mr-1" 
+                          title="Opções da lista">
+                    <span class="material-symbols-outlined text-[20px]">more_vert</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center mt-3 pt-2 border-t border-primary-fixed-dim/30 text-xs font-semibold text-primary">
+                <div onclick="window.shoppingStore.setActiveList('${activeList.id}'); window.shoppingStore.setActiveTab('cart');" class="flex items-center gap-1 cursor-pointer hover:underline">
+                  <span class="material-symbols-outlined text-[16px]">shopping_cart</span>
+                  Abrir carrinho
+                </div>
+                <button onclick="window.shoppingStore.setActiveList('${activeList.id}'); window.shoppingStore.setActiveTab('cart');" class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">
+                  arrow_forward
+                </button>
+              </div>
             </div>
-            <h3 class="font-body-lg text-lg font-bold text-on-surface group-hover:text-primary transition-colors">${activeList.title}</h3>
-            <p class="font-body-sm text-xs text-on-surface-variant mt-0.5">${totals.totalItems} ${totals.totalItems === 1 ? 'item no carrinho' : 'itens no carrinho'}</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="text-right">
-              <span class="font-price-display text-xl font-bold text-on-surface block">${formattedTotal}</span>
-              <span class="text-[11px] text-on-surface-variant">total previsto</span>
-            </div>
-            <!-- 3 Pontinhos Menu for Active List -->
-            <button onclick="window.openListActionsMenu('${activeList.id}', event)" 
-                    class="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-black/5 active:scale-90 transition-all -mr-1" 
-                    title="Opções da lista">
-              <span class="material-symbols-outlined text-[20px]">more_vert</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="flex justify-between items-center mt-3 pt-2 border-t border-primary-fixed-dim/30 text-xs font-semibold text-primary">
-          <div onclick="window.shoppingStore.setActiveList('${activeList.id}'); window.shoppingStore.setActiveTab('cart');" class="flex items-center gap-1 cursor-pointer hover:underline">
-            <span class="material-symbols-outlined text-[16px]">shopping_cart</span>
-            Abrir carrinho
-          </div>
-          <button onclick="window.shoppingStore.setActiveList('${activeList.id}'); window.shoppingStore.setActiveTab('cart');" class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">
-            arrow_forward
-          </button>
-        </div>
+          `;
+        }).join('')}
       </div>
     `;
   } else {
-    activeListCardHtml = `
+    currentListsHtml = `
       <div onclick="window.openNewListModal()" class="bg-surface-container rounded-2xl p-6 text-center cursor-pointer hover:bg-surface-variant transition-all border border-dashed border-outline-variant">
         <span class="material-symbols-outlined text-4xl text-primary mb-2">add_shopping_cart</span>
-        <h3 class="font-body-lg font-bold text-on-surface">Nenhuma lista ativa</h3>
-        <p class="text-xs text-on-surface-variant mt-1">Toque aqui para criar a lista deste mês</p>
+        <h3 class="font-body-lg font-bold text-on-surface">Nenhuma compra atual</h3>
+        <p class="text-xs text-on-surface-variant mt-1">Toque aqui para criar uma nova lista</p>
       </div>
     `;
   }
@@ -135,15 +152,15 @@ window.renderHomeView = function () {
 
       <!-- Main Content -->
       <main class="px-5 mt-2 space-y-6">
-        <!-- Active List Section -->
+        <!-- Active Lists Section -->
         <section>
           <div class="flex justify-between items-center mb-3">
             <h2 class="font-label-caps text-label-caps text-primary uppercase flex items-center gap-1.5 font-bold">
               <span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
-              Lista Atual
+              Compras Atuais
             </h2>
           </div>
-          ${activeListCardHtml}
+          ${currentListsHtml}
         </section>
 
         <!-- Previous Lists Section -->
@@ -326,11 +343,13 @@ window.attachSwipeListeners = function () {
 };
 
 // Global click listener to close swiped cards on outside tap
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('[data-swipe-container]')) {
-    window.resetSwipedCards();
-  }
-});
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('[data-swipe-container]')) {
+      window.resetSwipedCards();
+    }
+  });
+}
 
 window.confirmDeleteList = function (listId, e) {
   if (e) e.stopPropagation();

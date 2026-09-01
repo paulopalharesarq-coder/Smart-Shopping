@@ -159,9 +159,12 @@ class ShoppingStore {
   // Getters
   getActiveList() {
     if (!this.state.lists || this.state.lists.length === 0) return null;
-    const list = this.state.lists.find(l => l.id === this.state.activeListId);
-    if (list) return list;
-    return this.state.lists.find(l => l.status === 'in_progress') || this.state.lists[0] || null;
+    if (this.state.activeListId) {
+      const list = this.state.lists.find(l => l.id === this.state.activeListId);
+      if (list) return list;
+    }
+    // Return the first in-progress/uncompleted list; NEVER fallback to completed lists
+    return this.state.lists.find(l => l.status !== 'completed') || null;
   }
 
   getListById(id) {
@@ -201,8 +204,8 @@ class ShoppingStore {
 
       list.items.forEach(item => {
         const qty = Number(item.quantity) || 0;
-        const curPrice = Number(item.currentPrice) || 0;
-        const prevPrice = Number(item.previousPrice) || curPrice;
+        const curPrice = (item.currentPrice !== null && item.currentPrice !== undefined && item.currentPrice !== '') ? (Number(item.currentPrice) || 0) : 0;
+        const prevPrice = (item.previousPrice !== null && item.previousPrice !== undefined && item.previousPrice !== '') ? (Number(item.previousPrice) || 0) : curPrice;
 
         currentTotal += qty * curPrice;
         previousTotal += qty * prevPrice;
@@ -241,14 +244,19 @@ class ShoppingStore {
     const rawCategory = itemData.categoryId;
     const cleanCategory = (rawCategory && typeof rawCategory === 'string' && rawCategory.trim() !== '' && rawCategory !== 'sem-categoria') ? rawCategory.trim() : null;
 
+    const hasCurrentPrice = itemData.currentPrice !== null && itemData.currentPrice !== undefined && itemData.currentPrice !== '';
+    const parsedCurrentPrice = hasCurrentPrice ? Number(itemData.currentPrice) : null;
+    const hasPreviousPrice = itemData.previousPrice !== null && itemData.previousPrice !== undefined && itemData.previousPrice !== '';
+    const parsedPreviousPrice = hasPreviousPrice ? Number(itemData.previousPrice) : (parsedCurrentPrice !== null ? parsedCurrentPrice : null);
+
     const newItem = {
       id: 'item-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
       name: itemData.name.trim(),
       categoryId: cleanCategory,
       quantity: Number(itemData.quantity) || 1,
       unit: itemData.unit || 'unid',
-      currentPrice: Number(itemData.currentPrice) || 0,
-      previousPrice: Number(itemData.previousPrice) || Number(itemData.currentPrice) || 0,
+      currentPrice: parsedCurrentPrice,
+      previousPrice: parsedPreviousPrice,
       bought: true // Requirement 7: Every new product enters cart automatically
     };
 
@@ -280,7 +288,11 @@ class ShoppingStore {
     const item = list.items.find(i => i.id === itemId);
     if (!item) return;
 
-    item.currentPrice = Math.max(0, Number(newPrice) || 0);
+    if (newPrice === null || newPrice === undefined || newPrice === '') {
+      item.currentPrice = null;
+    } else {
+      item.currentPrice = Math.max(0, Number(newPrice) || 0);
+    }
     this.saveState();
   }
 
@@ -320,29 +332,44 @@ class ShoppingStore {
   }
 
   // List Management
-  createNewList(title, baseOnPrevious = false) {
-    const activeList = this.getActiveList();
-    const id = 'list-' + Date.now();
+  createNewList(title, baseOnPrevious = false, sourceListId = null) {
+    const id = 'list-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
     let items = [];
 
-    if (baseOnPrevious && activeList && activeList.items) {
-      // Clone items from active list and set previous prices to the current prices of that list
-      items = activeList.items.map(item => ({
-        id: 'item-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
-        name: item.name,
-        categoryId: item.categoryId || null,
-        quantity: item.quantity,
-        unit: item.unit,
-        currentPrice: item.currentPrice,
-        previousPrice: item.currentPrice || item.previousPrice,
-        bought: true // Requirement 7: Cloned items start in cart
-      }));
+    if (baseOnPrevious) {
+      const sourceList = sourceListId
+        ? this.getListById(sourceListId)
+        : (this.state.lists && this.state.lists.length > 0 ? this.state.lists[0] : null);
+
+      if (sourceList && sourceList.items) {
+        // Clone items: current price paid in previous list becomes the historical previousPrice
+        // The new list's currentPrice starts empty/null
+        items = sourceList.items.map(item => {
+          const hasCurrent = item.currentPrice !== null && item.currentPrice !== undefined && item.currentPrice !== '' && Number(item.currentPrice) > 0;
+          const hasPrev = item.previousPrice !== null && item.previousPrice !== undefined && item.previousPrice !== '' && Number(item.previousPrice) > 0;
+          const lastPaidPrice = hasCurrent ? Number(item.currentPrice) : (hasPrev ? Number(item.previousPrice) : null);
+
+          return {
+            id: 'item-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+            name: item.name,
+            categoryId: item.categoryId || null,
+            quantity: item.quantity !== undefined ? item.quantity : 1,
+            unit: item.unit || 'unid',
+            currentPrice: null, // Starts empty / not informed
+            previousPrice: lastPaidPrice, // Last paid price becomes previous reference
+            bought: true // Cloned items start in cart with missing price highlight
+          };
+        });
+      }
     }
+
+    const currentMonthName = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    const capitalizedMonth = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
 
     const newList = {
       id,
-      title: title || `Compras • ${new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
-      subtitle: new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
+      title: title || `Compras • ${capitalizedMonth}`,
+      subtitle: capitalizedMonth,
       status: 'in_progress',
       createdAt: new Date().toISOString(),
       completedAt: null,
@@ -366,14 +393,20 @@ class ShoppingStore {
     list.totalSpent = totals.currentTotal;
     list.itemsCount = totals.totalItems;
 
+    // When the currently viewed list is finalized, clear activeListId and go to home view
+    if (this.state.activeListId === listId) {
+      this.state.activeListId = null;
+      this.state.activeTab = 'home';
+    }
+
     this.saveState();
   }
 
   deleteList(listId) {
     this.state.lists = this.state.lists.filter(l => l.id !== listId);
     if (this.state.activeListId === listId) {
-      const remaining = this.state.lists[0];
-      this.state.activeListId = remaining ? remaining.id : null;
+      const remainingUncompleted = this.state.lists.find(l => l.status !== 'completed');
+      this.state.activeListId = remainingUncompleted ? remainingUncompleted.id : null;
     }
     this.saveState();
   }
