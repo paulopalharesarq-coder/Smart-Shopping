@@ -1,14 +1,14 @@
 /**
- * High-Quality Pure Node.js PNG Icon Generator for PWA
- * Generates all standard and maskable PWA icon sizes, Apple Touch Icon, and favicon
- * from the user's official 3D cream/orange shopping cart design.
+ * High-Quality Pure Node.js PNG Icon Generator for PWA & iOS
+ * Generates full-bleed, seamless icons with high-saturation 3D shopping cart artwork
+ * without any embedded inner borders, frame artifacts, or corner cuts.
  */
 
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-// CRC32 implementation for PNG chunks
+// CRC32 implementation
 function createCRC32Table() {
   const table = new Uint32Array(256);
   for (let i = 0; i < 256; i++) {
@@ -44,11 +44,10 @@ function createChunk(type, data) {
 function writePNG(width, height, rgbaBuffer, outputPath) {
   const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 
-  // IHDR chunk
   const ihdrData = Buffer.alloc(13);
   ihdrData.writeUInt32BE(width, 0);
   ihdrData.writeUInt32BE(height, 4);
-  ihdrData.writeUInt8(8, 8); // 8-bit depth
+  ihdrData.writeUInt8(8, 8);
   ihdrData.writeUInt8(6, 9); // RGBA
   ihdrData.writeUInt8(0, 10);
   ihdrData.writeUInt8(0, 11);
@@ -56,7 +55,6 @@ function writePNG(width, height, rgbaBuffer, outputPath) {
 
   const ihdrChunk = createChunk('IHDR', ihdrData);
 
-  // Scanlines with filter byte 0
   const scanlines = Buffer.alloc((width * 4 + 1) * height);
   for (let y = 0; y < height; y++) {
     const scanlineOffset = y * (width * 4 + 1);
@@ -72,203 +70,289 @@ function writePNG(width, height, rgbaBuffer, outputPath) {
   fs.writeFileSync(outputPath, png);
 }
 
-// Decode source PNG into raw RGBA
-function decodePNG(filePath) {
-  const buf = fs.readFileSync(filePath);
-  let pos = 8;
-  let width, height, colorType;
-  let idatChunks = [];
-
-  while (pos < buf.length) {
-    const len = buf.readUInt32BE(pos);
-    const type = buf.toString('ascii', pos + 4, pos + 8);
-    const data = buf.subarray(pos + 8, pos + 8 + len);
-    pos += 8 + len + 4;
-
-    if (type === 'IHDR') {
-      width = data.readUInt32BE(0);
-      height = data.readUInt32BE(4);
-      colorType = data[9];
-    } else if (type === 'IDAT') {
-      idatChunks.push(data);
-    } else if (type === 'IEND') {
-      break;
-    }
-  }
-
-  const decompressed = zlib.inflateSync(Buffer.concat(idatChunks));
-  const bytesPerPixel = (colorType === 6) ? 4 : (colorType === 2) ? 3 : 1;
-  const stride = width * bytesPerPixel;
-  const rgba = Buffer.alloc(width * height * 4);
-
-  let srcOffset = 0;
-  let prevRow = Buffer.alloc(stride);
-
-  for (let y = 0; y < height; y++) {
-    const filterType = decompressed[srcOffset++];
-    const currentRow = Buffer.alloc(stride);
-
-    for (let x = 0; x < stride; x++) {
-      const b = decompressed[srcOffset++];
-      const a = (x >= bytesPerPixel) ? currentRow[x - bytesPerPixel] : 0;
-      const c = (x >= bytesPerPixel) ? prevRow[x - bytesPerPixel] : 0;
-      const d = prevRow[x];
-
-      let val = 0;
-      if (filterType === 0) val = b;
-      else if (filterType === 1) val = (b + a) & 0xFF;
-      else if (filterType === 2) val = (b + d) & 0xFF;
-      else if (filterType === 3) val = (b + Math.floor((a + d) / 2)) & 0xFF;
-      else if (filterType === 4) {
-        const p = a + d - c;
-        const pa = Math.abs(p - a);
-        const pb = Math.abs(p - d);
-        const pc = Math.abs(p - c);
-        const pr = (pa <= pb && pa <= pc) ? a : (pb <= pc ? d : c);
-        val = (b + pr) & 0xFF;
-      }
-      currentRow[x] = val;
-    }
-
-    for (let x = 0; x < width; x++) {
-      const dstIdx = (y * width + x) * 4;
-      const srcIdx = x * bytesPerPixel;
-      if (bytesPerPixel === 4) {
-        rgba[dstIdx] = currentRow[srcIdx];
-        rgba[dstIdx + 1] = currentRow[srcIdx + 1];
-        rgba[dstIdx + 2] = currentRow[srcIdx + 2];
-        rgba[dstIdx + 3] = currentRow[srcIdx + 3];
-      } else if (bytesPerPixel === 3) {
-        rgba[dstIdx] = currentRow[srcIdx];
-        rgba[dstIdx + 1] = currentRow[srcIdx + 1];
-        rgba[dstIdx + 2] = currentRow[srcIdx + 2];
-        rgba[dstIdx + 3] = 255;
-      }
-    }
-    prevRow = currentRow;
-  }
-  return { width, height, rgba };
+// Distance to 2D line segment
+function distToSegment(px, py, x1, y1, x2, y2) {
+  const l2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+  if (l2 === 0) return Math.hypot(px - x1, py - y1);
+  let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(px - (x1 + t * (x2 - x1)), py - (y1 + t * (y2 - y1)));
 }
 
-// Bilinear sample from source RGBA
-function sampleRGBA(src, x, y) {
-  const { width, height, rgba } = src;
-  const cx = Math.max(0, Math.min(width - 1, x));
-  const cy = Math.max(0, Math.min(height - 1, y));
-
-  const x0 = Math.floor(cx);
-  const x1 = Math.min(width - 1, x0 + 1);
-  const y0 = Math.floor(cy);
-  const y1 = Math.min(height - 1, y0 + 1);
-
-  const fx = cx - x0;
-  const fy = cy - y0;
-
-  const idx00 = (y0 * width + x0) * 4;
-  const idx10 = (y0 * width + x1) * 4;
-  const idx01 = (y1 * width + x0) * 4;
-  const idx11 = (y1 * width + x1) * 4;
-
-  const out = [0, 0, 0, 255];
-  for (let c = 0; c < 4; c++) {
-    const top = rgba[idx00 + c] * (1 - fx) + rgba[idx10 + c] * fx;
-    const bot = rgba[idx01 + c] * (1 - fx) + rgba[idx11 + c] * fx;
-    out[c] = Math.round(top * (1 - fy) + bot * fy);
+// Point in polygon test
+function pointInPoly(px, py, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i][0], yi = poly[i][1];
+    const xj = poly[j][0], yj = poly[j][1];
+    const intersect = ((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
   }
-  return out;
+  return inside;
 }
 
-// Resize source image to target square with optional maskable padding
-function resizeIcon(src, targetSize, isMaskable = false) {
-  const dst = Buffer.alloc(targetSize * targetSize * 4);
+// Alpha blend over background
+function blendPixel(buf, idx, r, g, b, alpha) {
+  const a = Math.max(0, Math.min(1, alpha));
+  if (a <= 0) return;
+  const bgR = buf[idx];
+  const bgG = buf[idx + 1];
+  const bgB = buf[idx + 2];
+  buf[idx] = Math.round(r * a + bgR * (1 - a));
+  buf[idx + 1] = Math.round(g * a + bgG * (1 - a));
+  buf[idx + 2] = Math.round(b * a + bgB * (1 - a));
+  buf[idx + 3] = 255;
+}
 
-  // Square crop of source
-  const squareSize = Math.min(src.width, src.height);
-  const cropStartX = (src.width - squareSize) / 2;
-  const cropStartY = (src.height - squareSize) / 2;
+/**
+ * Renders full bleed high-saturation 3D icon
+ * @param {number} size - Canvas size in px
+ * @param {boolean} isMaskable - If true, scale cart to safe zone (80%)
+ */
+function renderFullBleedIcon(size, isMaskable = false) {
+  const buf = Buffer.alloc(size * size * 4);
 
-  // Background color for maskable safe area (cream background)
-  const bgR = 251, bgG = 240, bgB = 230; // #fbf0e6
+  // Full bleed background gradient (100% continuous, no borders, no margins)
+  const bgTop = [253, 247, 240]; // #fdf7f0
+  const bgBot = [244, 227, 210]; // #f4e3d2
 
-  // For maskable icons, keep content inside 80% safe zone
-  const scale = isMaskable ? 0.80 : 1.0;
-  const margin = (targetSize * (1 - scale)) / 2;
+  for (let y = 0; y < size; y++) {
+    const ny = y / (size - 1);
+    const r = Math.round(bgTop[0] + (bgBot[0] - bgTop[0]) * ny);
+    const g = Math.round(bgTop[1] + (bgBot[1] - bgTop[1]) * ny);
+    const b = Math.round(bgTop[2] + (bgBot[2] - bgTop[2]) * ny);
 
-  for (let dy = 0; dy < targetSize; dy++) {
-    for (let dx = 0; dx < targetSize; dx++) {
-      const dstIdx = (dy * targetSize + dx) * 4;
+    for (let x = 0; x < size; x++) {
+      const idx = (y * size + x) * 4;
+      buf[idx] = r;
+      buf[idx + 1] = g;
+      buf[idx + 2] = b;
+      buf[idx + 3] = 255;
+    }
+  }
 
-      if (isMaskable && (dx < margin || dx >= targetSize - margin || dy < margin || dy >= targetSize - margin)) {
-        dst[dstIdx] = bgR;
-        dst[dstIdx + 1] = bgG;
-        dst[dstIdx + 2] = bgB;
-        dst[dstIdx + 3] = 255;
-      } else {
-        const normX = (dx - (isMaskable ? margin : 0)) / (targetSize * scale);
-        const normY = (dy - (isMaskable ? margin : 0)) / (targetSize * scale);
+  // Normalized 512x512 coordinate space for crisp vector rasterization
+  const scale = isMaskable ? (size / 512) * 0.78 : (size / 512) * 0.94;
+  const offsetX = (size - 512 * scale) / 2;
+  const offsetY = (size - 512 * scale) / 2 + (isMaskable ? 0 : 4 * scale);
 
-        const srcX = cropStartX + normX * squareSize;
-        const srcY = cropStartY + normY * squareSize;
+  // Super-sampled 3D Shopping Cart Rasterizer
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const idx = (y * size + x) * 4;
 
-        const pixel = sampleRGBA(src, srcX, srcY);
-        dst[dstIdx] = pixel[0];
-        dst[dstIdx + 1] = pixel[1];
-        dst[dstIdx + 2] = pixel[2];
-        dst[dstIdx + 3] = pixel[3];
+      // Transform to normalized (nx, ny)
+      const nx = (x - offsetX) / scale;
+      const ny = (y - offsetY) / scale;
+
+      // 1. Soft 3D Drop Shadow underneath cart
+      const shadowDist1 = distToSegment(nx, ny, 160, 370, 390, 370);
+      if (shadowDist1 < 48 && ny > 330) {
+        const sAlpha = (1 - shadowDist1 / 48) * 0.28;
+        blendPixel(buf, idx, 110, 50, 10, sAlpha);
+      }
+      const wheelShadow1 = Math.hypot(nx - 200, ny - 410);
+      if (wheelShadow1 < 36) {
+        const wsAlpha = (1 - wheelShadow1 / 36) * 0.35;
+        blendPixel(buf, idx, 100, 45, 10, wsAlpha);
+      }
+      const wheelShadow2 = Math.hypot(nx - 355, ny - 410);
+      if (wheelShadow2 < 36) {
+        const wsAlpha = (1 - wheelShadow2 / 36) * 0.35;
+        blendPixel(buf, idx, 100, 45, 10, wsAlpha);
+      }
+
+      // 2. 3D Wheels (Vibrant Orange & Golden Glow)
+      const w1 = Math.hypot(nx - 200, ny - 388);
+      if (w1 <= 36) {
+        const edgeA = Math.min(1, (36 - w1) * 1.5);
+        // 3D Spherical/Cylindrical lighting on wheel
+        const wNormX = (nx - 200) / 36;
+        const wNormY = (ny - 388) / 36;
+        const wLight = Math.max(0, -wNormX * 0.4 - wNormY * 0.8);
+        const wr = Math.round(255 * (0.85 + 0.15 * wLight));
+        const wg = Math.round(145 * (0.75 + 0.25 * wLight) + 50 * wLight);
+        const wb = Math.round(30 * (0.6 + 0.4 * wLight));
+        blendPixel(buf, idx, wr, wg, wb, edgeA);
+
+        // Wheel inner hub
+        if (w1 <= 14) {
+          const hubLight = 0.5 + 0.5 * Math.max(0, -wNormY);
+          blendPixel(buf, idx, 255, 230, 190, 0.65 * hubLight);
+        }
+      }
+
+      const w2 = Math.hypot(nx - 355, ny - 388);
+      if (w2 <= 36) {
+        const edgeA = Math.min(1, (36 - w2) * 1.5);
+        const wNormX = (nx - 355) / 36;
+        const wNormY = (ny - 388) / 36;
+        const wLight = Math.max(0, -wNormX * 0.4 - wNormY * 0.8);
+        const wr = Math.round(255 * (0.85 + 0.15 * wLight));
+        const wg = Math.round(145 * (0.75 + 0.25 * wLight) + 50 * wLight);
+        const wb = Math.round(30 * (0.6 + 0.4 * wLight));
+        blendPixel(buf, idx, wr, wg, wb, edgeA);
+
+        if (w2 <= 14) {
+          const hubLight = 0.5 + 0.5 * Math.max(0, -wNormY);
+          blendPixel(buf, idx, 255, 230, 190, 0.65 * hubLight);
+        }
+      }
+
+      // 3. Orange 3D Lower Base Layer (Rich, saturated, punchy orange)
+      const basePoly = [
+        [120, 150],
+        [150, 150],
+        [182, 280],
+        [205, 335],
+        [375, 335],
+        [418, 175],
+        [430, 185],
+        [395, 345],
+        [200, 345],
+        [170, 285],
+        [135, 160],
+        [115, 160]
+      ];
+      const distBase = distToSegment(nx, ny, 165, 200, 195, 335);
+      const distBaseBot = distToSegment(nx, ny, 195, 335, 395, 335);
+      const distBaseBack = distToSegment(nx, ny, 395, 335, 425, 180);
+
+      const inOrangeLayer = (distBase <= 18) || (distBaseBot <= 18) || (distBaseBack <= 16);
+      if (inOrangeLayer) {
+        const minDist = Math.min(distBase, distBaseBot, distBaseBack);
+        const edgeA = Math.min(1, (18 - minDist) * 1.5);
+        const t = Math.max(0, Math.min(1, (ny - 150) / 200));
+        // Vibrant saturated gradient: #ff851b to #e65100
+        const orR = Math.round(255 * (1 - t * 0.1));
+        const orG = Math.round(135 - t * 45);
+        const orB = Math.round(20 - t * 15);
+        blendPixel(buf, idx, orR, orG, orB, edgeA);
+      }
+
+      // 4. Cream & Pure White 3D Basket Body (High Contrast & Clear Depth)
+      // Rounded basket polygon
+      const basketBody = [
+        [175, 175],
+        [415, 175],
+        [385, 310],
+        [220, 310]
+      ];
+      const inBasket = pointInPoly(nx, ny, basketBody);
+      if (inBasket) {
+        const by = (ny - 175) / (310 - 175);
+        const bx = (nx - 200) / (415 - 200);
+        // Cream 3D lighting
+        const crR = Math.round(255 - by * 8);
+        const crG = Math.round(250 - by * 14 + bx * 4);
+        const crB = Math.round(242 - by * 18);
+        blendPixel(buf, idx, crR, crG, crB, 1.0);
+      }
+
+      // Handle and upper rim
+      const handleDist = distToSegment(nx, ny, 105, 150, 145, 150);
+      const handleSlant = distToSegment(nx, ny, 145, 150, 175, 230);
+      const basketRim = distToSegment(nx, ny, 165, 175, 420, 175);
+      const basketBottom = distToSegment(nx, ny, 215, 310, 385, 310);
+      const basketRight = distToSegment(nx, ny, 420, 175, 385, 310);
+      const basketLeft = distToSegment(nx, ny, 165, 175, 215, 310);
+
+      const minRimDist = Math.min(handleDist, handleSlant, basketRim, basketBottom, basketRight, basketLeft);
+      if (minRimDist <= 14) {
+        const edgeA = Math.min(1, (14 - minRimDist) * 1.5);
+        // Crisp white rim with subtle warm bevel
+        const rY = Math.max(0, Math.min(1, (ny - 140) / 180));
+        const rimR = Math.round(255);
+        const rimG = Math.round(252 - rY * 6);
+        const rimB = Math.round(246 - rY * 10);
+        blendPixel(buf, idx, rimR, rimG, rimB, edgeA);
+      }
+
+      // Handle grip bulb
+      const handleBulb = Math.hypot(nx - 105, ny - 150);
+      if (handleBulb <= 15) {
+        const edgeA = Math.min(1, (15 - handleBulb) * 1.5);
+        blendPixel(buf, idx, 255, 255, 252, edgeA);
+      }
+
+      // Subtle glossy reflection line on top of basket rim
+      const glossDist = distToSegment(nx, ny, 175, 173, 415, 173);
+      if (glossDist <= 3) {
+        const gAlpha = (1 - glossDist / 3) * 0.7;
+        blendPixel(buf, idx, 255, 255, 255, gAlpha);
       }
     }
   }
-  return dst;
+
+  return buf;
 }
 
-// SVG Vector version of the 3D cream & orange shopping cart
-function generateSVG() {
+// Generate matching scalable SVG
+function generateVectorSVG() {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#fdf4ec"/>
-      <stop offset="100%" stop-color="#f5e3d3"/>
+    <!-- Full-bleed continuous cream gradient -->
+    <linearGradient id="bgGradFull" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fdf7f0"/>
+      <stop offset="100%" stop-color="#f4e3d2"/>
     </linearGradient>
-    <filter id="softShadow" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#7a4216" flood-opacity="0.16"/>
-    </filter>
-    <filter id="cartShadow" x="-15%" y="-15%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#804107" flood-opacity="0.22"/>
-    </filter>
-    <linearGradient id="orangeLayer" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffb783"/>
-      <stop offset="100%" stop-color="#e67e22"/>
+
+    <!-- Vibrant 3D orange gradient -->
+    <linearGradient id="vibrantOrange" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff9233"/>
+      <stop offset="100%" stop-color="#e65100"/>
     </linearGradient>
-    <linearGradient id="creamLayer" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#faefe6"/>
-    </linearGradient>
+
+    <!-- 3D wheel gradient -->
     <linearGradient id="wheelGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffd5b5"/>
-      <stop offset="100%" stop-color="#f29f57"/>
+      <stop offset="0%" stop-color="#ffa34d"/>
+      <stop offset="100%" stop-color="#d35400"/>
     </linearGradient>
+
+    <!-- Crisp cream basket fill -->
+    <linearGradient id="creamBasket" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#fbf1e8"/>
+    </linearGradient>
+
+    <!-- Soft drop shadow filter -->
+    <filter id="cartDepthShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#803800" flood-opacity="0.25"/>
+    </filter>
   </defs>
 
-  <!-- Base Rounded Card -->
-  <rect x="32" y="32" width="448" height="448" rx="105" fill="url(#bgGrad)" filter="url(#softShadow)"/>
+  <!-- Full-bleed background with zero borders or frames -->
+  <rect width="512" height="512" fill="url(#bgGradFull)"/>
 
-  <!-- Orange 3D Bottom Layer -->
-  <path d="M 130 160 C 130 150 142 142 154 146 L 180 156 C 190 160 196 172 200 188 L 220 280 C 224 298 240 312 260 312 L 375 312 C 392 312 406 298 410 282 L 424 200 C 428 178 410 160 388 160 L 205 160" 
-        fill="url(#orangeLayer)" 
-        filter="url(#cartShadow)"/>
+  <!-- Cart Shadow & Assembly -->
+  <g filter="url(#cartDepthShadow)">
+    <!-- 3D Wheels -->
+    <circle cx="200" cy="388" r="36" fill="url(#wheelGrad)"/>
+    <circle cx="200" cy="388" r="14" fill="#ffebd9" opacity="0.8"/>
+    <circle cx="355" cy="388" r="36" fill="url(#wheelGrad)"/>
+    <circle cx="355" cy="388" r="14" fill="#ffebd9" opacity="0.8"/>
 
-  <!-- 3D Wheels -->
-  <circle cx="205" cy="380" r="34" fill="url(#wheelGrad)" filter="url(#cartShadow)"/>
-  <circle cx="205" cy="380" r="24" fill="#faefe6" opacity="0.4"/>
-  <circle cx="355" cy="380" r="34" fill="url(#wheelGrad)" filter="url(#cartShadow)"/>
-  <circle cx="355" cy="380" r="24" fill="#faefe6" opacity="0.4"/>
+    <!-- Vibrant Orange 3D Lower Base -->
+    <path d="M 120 150 L 145 150 L 180 275 L 205 335 L 375 335 L 420 175" 
+          fill="none" 
+          stroke="url(#vibrantOrange)" 
+          stroke-width="32" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"/>
 
-  <!-- Cream 3D Top Layer / Shopping Basket -->
-  <path d="M 125 150 C 112 150 102 160 102 172 C 102 184 112 194 125 194 L 148 194 C 158 194 167 200 171 210 L 195 272 C 204 296 226 312 252 312 L 375 312 C 396 312 414 296 420 275 L 434 200 C 438 182 424 166 406 166 L 185 166" 
-        fill="url(#creamLayer)" 
-        stroke="rgba(255,255,255,0.85)" 
-        stroke-width="6" 
-        filter="url(#cartShadow)"/>
+    <!-- 3D Cream Basket Body -->
+    <polygon points="175,175 415,175 385,310 220,310" fill="url(#creamBasket)"/>
+
+    <!-- Crisp White Upper Rim & Frame -->
+    <path d="M 105 150 L 145 150 L 175 230 L 220 310 L 385 310 L 420 175 L 170 175" 
+          fill="none" 
+          stroke="#ffffff" 
+          stroke-width="24" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"/>
+          
+    <circle cx="105" cy="150" r="14" fill="#ffffff"/>
+  </g>
 </svg>`;
 }
 
@@ -278,51 +362,43 @@ function generateAllIcons() {
     fs.mkdirSync(iconsDir, { recursive: true });
   }
 
-  const sourceFile = path.join(iconsDir, 'source_icon.png');
-  if (!fs.existsSync(sourceFile)) {
-    console.error('source_icon.png not found!');
-    process.exit(1);
-  }
+  console.log('[ICONS] Generating high-contrast, full-bleed icon assets...');
 
-  console.log('Decoding source icon:', sourceFile);
-  const src = decodePNG(sourceFile);
-  console.log(`Source dimensions: ${src.width}x${src.height}`);
-
-  // 1. icon-512.png
-  console.log('Generating icon-512.png...');
-  const buf512 = resizeIcon(src, 512, false);
-  writePNG(512, 512, buf512, path.join(iconsDir, 'icon-512.png'));
-
-  // 2. icon-192.png
-  console.log('Generating icon-192.png...');
-  const buf192 = resizeIcon(src, 192, false);
-  writePNG(192, 192, buf192, path.join(iconsDir, 'icon-192.png'));
-
-  // 3. apple-touch-icon.png (180x180)
-  console.log('Generating apple-touch-icon.png (180x180)...');
-  const buf180 = resizeIcon(src, 180, false);
+  // 1. apple-touch-icon.png (180x180) - Full bleed continuous background for iOS native look
+  console.log('Generating apple-touch-icon.png (180x180, full bleed)...');
+  const buf180 = renderFullBleedIcon(180, false);
   writePNG(180, 180, buf180, path.join(iconsDir, 'apple-touch-icon.png'));
 
-  // 4. icon-maskable-512.png (with safe area margin)
-  console.log('Generating icon-maskable-512.png...');
-  const bufMask512 = resizeIcon(src, 512, true);
-  writePNG(512, 512, bufMask512, path.join(iconsDir, 'icon-maskable-512.png'));
+  // 2. icon-192.png (192x192) - Full bleed
+  console.log('Generating icon-192.png (192x192, full bleed)...');
+  const buf192 = renderFullBleedIcon(192, false);
+  writePNG(192, 192, buf192, path.join(iconsDir, 'icon-192.png'));
 
-  // 5. icon-maskable-192.png (with safe area margin)
-  console.log('Generating icon-maskable-192.png...');
-  const bufMask192 = resizeIcon(src, 192, true);
+  // 3. icon-512.png (512x512) - Full bleed
+  console.log('Generating icon-512.png (512x512, full bleed)...');
+  const buf512 = renderFullBleedIcon(512, false);
+  writePNG(512, 512, buf512, path.join(iconsDir, 'icon-512.png'));
+
+  // 4. icon-maskable-192.png (192x192) - Full bleed background with cart inside safe zone
+  console.log('Generating icon-maskable-192.png (192x192, safe zone)...');
+  const bufMask192 = renderFullBleedIcon(192, true);
   writePNG(192, 192, bufMask192, path.join(iconsDir, 'icon-maskable-192.png'));
 
-  // 6. favicon-32.png
-  console.log('Generating favicon-32.png...');
-  const buf32 = resizeIcon(src, 32, false);
+  // 5. icon-maskable-512.png (512x512) - Full bleed background with cart inside safe zone
+  console.log('Generating icon-maskable-512.png (512x512, safe zone)...');
+  const bufMask512 = renderFullBleedIcon(512, true);
+  writePNG(512, 512, bufMask512, path.join(iconsDir, 'icon-maskable-512.png'));
+
+  // 6. favicon-32.png (32x32)
+  console.log('Generating favicon-32.png (32x32)...');
+  const buf32 = renderFullBleedIcon(32, false);
   writePNG(32, 32, buf32, path.join(iconsDir, 'favicon-32.png'));
 
   // 7. icon.svg
   console.log('Generating icon.svg...');
-  fs.writeFileSync(path.join(iconsDir, 'icon.svg'), generateSVG(), 'utf8');
+  fs.writeFileSync(path.join(iconsDir, 'icon.svg'), generateVectorSVG(), 'utf8');
 
-  console.log('✨ All PWA icons generated successfully from official design!');
+  console.log('✨ All full-bleed, high-contrast PWA icons generated successfully!');
 }
 
 generateAllIcons();

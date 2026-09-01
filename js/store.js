@@ -86,10 +86,17 @@ class ShoppingStore {
   }
 
   loadState() {
+    let themePref = 'system';
+    try {
+      themePref = localStorage.getItem('stitch_theme_preference') || 'system';
+    } catch (e) {}
+
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        parsed.themePreference = themePref || parsed.themePreference || 'system';
+        return parsed;
       }
     } catch (e) {
       console.error('Error loading state from localStorage', e);
@@ -104,6 +111,7 @@ class ShoppingStore {
       selectedCategoryFilter: 'all',
       monthlyBudget: 0.00,
       userName: 'Usuário',
+      themePreference: themePref,
       categories: DEFAULT_CATEGORIES,
       pantry: [],
       lists: []
@@ -128,6 +136,19 @@ class ShoppingStore {
 
   notify() {
     this.subscribers.forEach(cb => cb(this.state));
+  }
+
+  // Theme Management
+  setThemePreference(pref) {
+    if (!['system', 'light', 'dark'].includes(pref)) return;
+    this.state.themePreference = pref;
+    try {
+      localStorage.setItem('stitch_theme_preference', pref);
+    } catch (e) {}
+    if (typeof window !== 'undefined' && typeof window.applyThemePreference === 'function') {
+      window.applyThemePreference(pref);
+    }
+    this.saveState();
   }
 
   // Navigation

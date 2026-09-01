@@ -36,5 +36,12 @@ const versionData = {
   buildTime: now.toISOString(),
   commit: commitSha || 'local-build'
 };
-fs.writeFileSync(versionPath, JSON.stringify(versionData, null, 2), 'utf8');
-console.log(`[BUILD] Generated version.json successfully!`);
+// 3. Ensure all icons are up to date
+try {
+  require('./generate_icons.js');
+} catch (err) {
+  console.warn('[BUILD] Icon generator warning:', err);
+}
+
+console.log(`[BUILD] Build finished successfully!`);
+

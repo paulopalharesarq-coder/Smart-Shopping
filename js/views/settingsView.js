@@ -6,6 +6,7 @@
 window.renderSettingsView = function () {
   const store = window.shoppingStore;
   const budget = Number(store.state.monthlyBudget) || 0;
+  const themePref = store.state.themePreference || 'system';
 
   return `
     <div class="pb-28">
@@ -34,6 +35,39 @@ window.renderSettingsView = function () {
             </span>
           </div>
         </div>
+
+        <!-- Theme Appearance Setting (3 States: System, Light, Dark) -->
+        <section class="bg-surface-container rounded-2xl p-4 border border-outline-variant/40 space-y-3">
+          <div class="flex items-center gap-2.5 text-primary font-bold">
+            <span class="material-symbols-outlined text-[20px]">palette</span>
+            <h3 class="font-headline-md text-sm text-on-surface">Aparência do Aplicativo</h3>
+          </div>
+          <p class="text-xs text-on-surface-variant">
+            Escolha se o aplicativo acompanha o tema do celular ou use um tema fixo.
+          </p>
+          <div class="grid grid-cols-3 gap-2 pt-1">
+            <!-- Option 1: System / Automatic -->
+            <button onclick="window.shoppingStore.setThemePreference('system')" 
+                    class="p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer ${themePref === 'system' ? 'bg-primary-container text-on-primary-container border-primary-container font-bold shadow-sm' : 'bg-surface-container-high hover:bg-surface-variant text-on-surface border-outline-variant/30 font-semibold'}">
+              <span class="material-symbols-outlined text-[20px]">phone_iphone</span>
+              <span class="text-[11px] leading-tight">Automático</span>
+            </button>
+
+            <!-- Option 2: Light -->
+            <button onclick="window.shoppingStore.setThemePreference('light')" 
+                    class="p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer ${themePref === 'light' ? 'bg-primary-container text-on-primary-container border-primary-container font-bold shadow-sm' : 'bg-surface-container-high hover:bg-surface-variant text-on-surface border-outline-variant/30 font-semibold'}">
+              <span class="material-symbols-outlined text-[20px]">light_mode</span>
+              <span class="text-[11px] leading-tight">Claro</span>
+            </button>
+
+            <!-- Option 3: Dark -->
+            <button onclick="window.shoppingStore.setThemePreference('dark')" 
+                    class="p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer ${themePref === 'dark' ? 'bg-primary-container text-on-primary-container border-primary-container font-bold shadow-sm' : 'bg-surface-container-high hover:bg-surface-variant text-on-surface border-outline-variant/30 font-semibold'}">
+              <span class="material-symbols-outlined text-[20px]">dark_mode</span>
+              <span class="text-[11px] leading-tight">Escuro</span>
+            </button>
+          </div>
+        </section>
 
         <!-- Mobile Connect & PWA Card -->
         <section class="bg-primary-fixed/60 rounded-2xl p-4 border border-primary-fixed-dim/70 space-y-3 shadow-sm">

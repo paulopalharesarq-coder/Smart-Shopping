@@ -130,39 +130,59 @@ function renderApp() {
   `;
 }
 
-// Automatic Dark Mode synchronization with OS preference (prefers-color-scheme)
-function initAutoDarkMode() {
-  if (typeof window === 'undefined' || !window.matchMedia) return;
+// Universal Theme Engine: Supports 'system' (auto), 'light', and 'dark'
+window.applyThemePreference = function (preference) {
+  if (typeof document === 'undefined') return;
 
-  const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  
-  function applyTheme(isDark) {
-    if (typeof document === 'undefined') return;
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    }
+  const pref = preference || localStorage.getItem('stitch_theme_preference') || 'system';
+  const systemDark = (typeof window !== 'undefined' && window.matchMedia) 
+    ? window.matchMedia('(prefers-color-scheme: dark)').matches 
+    : false;
+
+  let isDark = false;
+  if (pref === 'dark') {
+    isDark = true;
+  } else if (pref === 'light') {
+    isDark = false;
+  } else {
+    // 'system'
+    isDark = systemDark;
   }
 
-  // Set initial theme based on system preference
-  applyTheme(darkModeMediaQuery.matches);
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+    document.documentElement.classList.remove('light');
+  } else {
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
+  }
+};
 
-  // Listen to real-time OS preference changes without reload
-  if (darkModeMediaQuery.addEventListener) {
-    darkModeMediaQuery.addEventListener('change', (e) => {
-      applyTheme(e.matches);
-    });
-  } else if (darkModeMediaQuery.addListener) {
-    darkModeMediaQuery.addListener((e) => {
-      applyTheme(e.matches);
-    });
+function initThemeManager() {
+  if (typeof window === 'undefined') return;
+
+  // Initial application
+  window.applyThemePreference();
+
+  // Media Query listener for system theme changes in real-time
+  if (window.matchMedia) {
+    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => {
+      const pref = localStorage.getItem('stitch_theme_preference') || 'system';
+      if (pref === 'system') {
+        window.applyThemePreference('system');
+      }
+    };
+
+    if (darkModeMediaQuery.addEventListener) {
+      darkModeMediaQuery.addEventListener('change', onChange);
+    } else if (darkModeMediaQuery.addListener) {
+      darkModeMediaQuery.addListener(onChange);
+    }
   }
 }
 
-initAutoDarkMode();
+initThemeManager();
 
 // Initialize on DOM ready or immediately if already loaded
 function initApp() {

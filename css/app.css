@@ -65,11 +65,74 @@
 }
 
 /* ==========================================================================
-   Design Tokens - Dark Mode (Warm, High-Contrast Lumina Dark)
+   Design Tokens - Dark Mode via Class (.dark)
    ========================================================================== */
-html.dark,
+html.dark {
+  --color-primary: #ffb783;
+  --color-on-primary: #4f2500;
+  --color-primary-container: #e67e22;
+  --color-on-primary-container: #ffe0cb;
+  --color-primary-fixed: #3d2212;
+  --color-primary-fixed-dim: #5c341c;
+  --color-on-primary-fixed: #ffdcc5;
+  --color-on-primary-fixed-variant: #ffb783;
+  --color-inverse-primary: #944a00;
+
+  --color-secondary: #61de8a;
+  --color-on-secondary: #00391a;
+  --color-secondary-container: #005228;
+  --color-on-secondary-container: #a3e9b8;
+  --color-secondary-fixed: #163820;
+  --color-secondary-fixed-dim: #235431;
+  --color-on-secondary-fixed: #a3e9b8;
+  --color-on-secondary-fixed-variant: #61de8a;
+
+  --color-tertiary: #ffb4a9;
+  --color-on-tertiary: #680003;
+  --color-tertiary-container: #93000a;
+  --color-on-tertiary-container: #ffdad4;
+  --color-tertiary-fixed: #441713;
+  --color-tertiary-fixed-dim: #64231d;
+  --color-on-tertiary-fixed: #ffdad4;
+  --color-on-tertiary-fixed-variant: #ffb4a9;
+
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+
+  --color-background: #18120d;
+  --color-on-background: #f2dfd4;
+  --color-surface: #18120d;
+  --color-on-surface: #f2dfd4;
+  --color-surface-dim: #18120d;
+  --color-surface-bright: #3f3128;
+  --color-surface-container-lowest: #1f1712;
+  --color-surface-container-low: #241b15;
+  --color-surface-container: #2b2019;
+  --color-surface-container-high: #33271f;
+  --color-surface-container-highest: #3e3027;
+  --color-surface-variant: #33271f;
+  --color-on-surface-variant: #d5c3b7;
+  --color-inverse-surface: #f2dfd4;
+  --color-inverse-on-surface: #231a13;
+  --color-surface-tint: #ffb783;
+
+  --color-outline: #9f8c7e;
+  --color-outline-variant: #534237;
+
+  --glass-bg: rgba(36, 27, 21, 0.85);
+  --glass-border: rgba(83, 66, 55, 0.65);
+  --glass-total-bar: rgba(31, 23, 18, 0.88);
+  --modal-backdrop: rgba(0, 0, 0, 0.68);
+  --shadow-color: rgba(0, 0, 0, 0.35);
+}
+
+/* ==========================================================================
+   Design Tokens - Dark Mode via System Media Query (when not explicitly light)
+   ========================================================================== */
 @media (prefers-color-scheme: dark) {
-  :root {
+  html:not(.light) {
     --color-primary: #ffb783;
     --color-on-primary: #4f2500;
     --color-primary-container: #e67e22;
@@ -143,7 +206,7 @@ body {
   margin: 0;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Material Symbols configuration */
@@ -301,7 +364,19 @@ input:checked + .slider:before {
   background-color: #feeadf;
 }
 
-html.dark .price-up,
+html.dark .price-up {
+  color: #ffb4ab;
+  background-color: #561e18;
+}
+html.dark .price-down {
+  color: #7bf8a1;
+  background-color: #0b3d1c;
+}
+html.dark .price-equal {
+  color: #d5c3b7;
+  background-color: #33271f;
+}
+
 @media (prefers-color-scheme: dark) {
   html:not(.light) .price-up {
     color: #ffb4ab;
@@ -327,7 +402,7 @@ html.dark .price-up,
   background-color: var(--color-background);
   box-shadow: 0 0 40px var(--shadow-color);
   padding-top: env(safe-area-inset-top, 0px);
-  transition: background-color 0.25s ease;
+  transition: background-color 0.2s ease;
 }
 
 /* Mobile Safe Areas for Navigation Bar and Sticky Elements */
@@ -408,7 +483,11 @@ input, textarea {
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-html.dark .category-item-card,
+html.dark .category-item-card {
+  background-color: var(--color-surface-container) !important;
+  border-color: var(--cat-border, var(--color-outline-variant)) !important;
+}
+
 @media (prefers-color-scheme: dark) {
   html:not(.light) .category-item-card {
     background-color: var(--color-surface-container) !important;
@@ -422,7 +501,11 @@ html.dark .category-item-card,
   background-color: #fff4f1 !important;
 }
 
-html.dark .cart-missing-price-card,
+html.dark .cart-missing-price-card {
+  border-color: #ffb4a9 !important;
+  background-color: #3e1b18 !important;
+}
+
 @media (prefers-color-scheme: dark) {
   html:not(.light) .cart-missing-price-card {
     border-color: #ffb4a9 !important;
@@ -437,7 +520,12 @@ html.dark .cart-missing-price-card,
   animation: pulseBadge 2s infinite ease-in-out;
 }
 
-html.dark .cart-missing-price-badge,
+html.dark .cart-missing-price-badge {
+  background-color: #561e18;
+  color: #ffb4ab;
+  border-color: #792a22;
+}
+
 @media (prefers-color-scheme: dark) {
   html:not(.light) .cart-missing-price-badge {
     background-color: #561e18;
