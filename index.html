@@ -7,7 +7,9 @@
   <meta name="description" content="Gerenciador inteligente de compras mensais com comparativo de preços históricos e design Lumina Lifestyle.">
   
   <!-- PWA & Mobile Web Meta Tags -->
-  <meta name="theme-color" content="#fff8f5">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#fff8f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#18120d" media="(prefers-color-scheme: dark)">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -15,6 +17,7 @@
   
   <!-- PWA Manifest & App Icons -->
   <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -38,58 +41,58 @@
       theme: {
         extend: {
           colors: {
-            "primary": "#944a00",
-            "on-primary": "#ffffff",
-            "primary-container": "#e67e22",
-            "on-primary-container": "#502600",
-            "primary-fixed": "#ffdcc5",
-            "primary-fixed-dim": "#ffb783",
-            "on-primary-fixed": "#301400",
-            "on-primary-fixed-variant": "#713700",
-            "inverse-primary": "#ffb783",
+            "primary": "var(--color-primary)",
+            "on-primary": "var(--color-on-primary)",
+            "primary-container": "var(--color-primary-container)",
+            "on-primary-container": "var(--color-on-primary-container)",
+            "primary-fixed": "var(--color-primary-fixed)",
+            "primary-fixed-dim": "var(--color-primary-fixed-dim)",
+            "on-primary-fixed": "var(--color-on-primary-fixed)",
+            "on-primary-fixed-variant": "var(--color-on-primary-fixed-variant)",
+            "inverse-primary": "var(--color-inverse-primary)",
             
-            "secondary": "#006d37",
-            "on-secondary": "#ffffff",
-            "secondary-container": "#7bf8a1",
-            "on-secondary-container": "#007239",
-            "secondary-fixed": "#7efba4",
-            "secondary-fixed-dim": "#61de8a",
-            "on-secondary-fixed": "#00210c",
-            "on-secondary-fixed-variant": "#005228",
+            "secondary": "var(--color-secondary)",
+            "on-secondary": "var(--color-on-secondary)",
+            "secondary-container": "var(--color-secondary-container)",
+            "on-secondary-container": "var(--color-on-secondary-container)",
+            "secondary-fixed": "var(--color-secondary-fixed)",
+            "secondary-fixed-dim": "var(--color-secondary-fixed-dim)",
+            "on-secondary-fixed": "var(--color-on-secondary-fixed)",
+            "on-secondary-fixed-variant": "var(--color-on-secondary-fixed-variant)",
 
-            "tertiary": "#b4271d",
-            "on-tertiary": "#ffffff",
-            "tertiary-container": "#ff6856",
-            "on-tertiary-container": "#6a0001",
-            "tertiary-fixed": "#ffdad5",
-            "tertiary-fixed-dim": "#ffb4a9",
-            "on-tertiary-fixed": "#410000",
-            "on-tertiary-fixed-variant": "#910807",
+            "tertiary": "var(--color-tertiary)",
+            "on-tertiary": "var(--color-on-tertiary)",
+            "tertiary-container": "var(--color-tertiary-container)",
+            "on-tertiary-container": "var(--color-on-tertiary-container)",
+            "tertiary-fixed": "var(--color-tertiary-fixed)",
+            "tertiary-fixed-dim": "var(--color-tertiary-fixed-dim)",
+            "on-tertiary-fixed": "var(--color-on-tertiary-fixed)",
+            "on-tertiary-fixed-variant": "var(--color-on-tertiary-fixed-variant)",
 
-            "error": "#ba1a1a",
-            "on-error": "#ffffff",
-            "error-container": "#ffdad6",
-            "on-error-container": "#93000a",
+            "error": "var(--color-error)",
+            "on-error": "var(--color-on-error)",
+            "error-container": "var(--color-error-container)",
+            "on-error-container": "var(--color-on-error-container)",
 
-            "background": "#fff8f5",
-            "on-background": "#231a13",
-            "surface": "#fff8f5",
-            "on-surface": "#231a13",
-            "surface-dim": "#e9d6cc",
-            "surface-bright": "#fff8f5",
-            "surface-container-lowest": "#ffffff",
-            "surface-container-low": "#fff1ea",
-            "surface-container": "#feeadf",
-            "surface-container-high": "#f8e4da",
-            "surface-container-highest": "#f2dfd4",
-            "surface-variant": "#f2dfd4",
-            "on-surface-variant": "#564337",
-            "inverse-surface": "#392e27",
-            "inverse-on-surface": "#ffede4",
-            "surface-tint": "#944a00",
+            "background": "var(--color-background)",
+            "on-background": "var(--color-on-background)",
+            "surface": "var(--color-surface)",
+            "on-surface": "var(--color-on-surface)",
+            "surface-dim": "var(--color-surface-dim)",
+            "surface-bright": "var(--color-surface-bright)",
+            "surface-container-lowest": "var(--color-surface-container-lowest)",
+            "surface-container-low": "var(--color-surface-container-low)",
+            "surface-container": "var(--color-surface-container)",
+            "surface-container-high": "var(--color-surface-container-high)",
+            "surface-container-highest": "var(--color-surface-container-highest)",
+            "surface-variant": "var(--color-surface-variant)",
+            "on-surface-variant": "var(--color-on-surface-variant)",
+            "inverse-surface": "var(--color-inverse-surface)",
+            "inverse-on-surface": "var(--color-inverse-on-surface)",
+            "surface-tint": "var(--color-surface-tint)",
 
-            "outline": "#897365",
-            "outline-variant": "#dcc1b1"
+            "outline": "var(--color-outline)",
+            "outline-variant": "var(--color-outline-variant)"
           },
           borderRadius: {
             "DEFAULT": "0.5rem",
@@ -136,6 +139,23 @@
 </head>
 <body class="bg-background text-on-surface antialiased min-h-screen">
   
+  <!-- PWA Persistent Update Banner (Shown whenever a new SW version is waiting) -->
+  <div id="pwa-update-banner" class="hidden fixed top-3 left-4 right-4 max-w-[508px] mx-auto z-40 bg-surface-container-highest/95 backdrop-blur-md rounded-2xl p-3 border border-primary-container/40 shadow-[0_10px_30px_rgba(0,0,0,0.18)] slide-up">
+    <div class="flex items-center justify-between gap-3">
+      <div class="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center shrink-0 shadow-sm">
+        <span class="material-symbols-outlined text-[22px]">system_update</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h4 class="font-bold text-xs text-on-surface truncate">Nova versão disponível</h4>
+        <p class="text-[11px] text-on-surface-variant truncate">Atualize para usar a versão mais recente</p>
+      </div>
+      <button id="pwa-update-btn" onclick="window.applyPendingUpdate()" class="px-3.5 py-2 bg-primary-container text-on-primary-container text-xs font-bold rounded-xl shadow-md hover:opacity-90 active:scale-95 transition-all shrink-0 flex items-center gap-1.5 cursor-pointer">
+        <span class="material-symbols-outlined text-[16px]">refresh</span>
+        Atualizar
+      </button>
+    </div>
+  </div>
+
   <!-- PWA Install Floating Banner (Shown dynamically when installable) -->
   <div id="pwa-install-banner" class="hidden fixed top-3 left-4 right-4 max-w-[508px] mx-auto z-50 bg-surface-container-lowest/95 backdrop-blur-md rounded-2xl p-3 border border-primary-fixed-dim/60 shadow-xl slide-up">
     <div class="flex items-center justify-between gap-3">
@@ -181,56 +201,106 @@
   <script src="js/views/settingsView.js"></script>
   <script src="js/app.js"></script>
 
-  <!-- Service Worker Registration & Auto-Update Engine -->
+  <!-- Service Worker Registration & User-Controlled Update Engine -->
   <script>
-    if ('serviceWorker' in navigator) {
+    (function () {
+      let waitingWorker = null;
+      let userTriggeredUpdate = false;
       let isRefreshing = false;
 
-      // When the service worker controlling this page changes, reload cleanly to load fresh bundle
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!isRefreshing) {
-          isRefreshing = true;
-          console.log('[PWA] Nova versão ativada! Atualizando aplicação...');
+      window.showUpdateBanner = function (worker) {
+        if (worker) waitingWorker = worker;
+        const banner = document.getElementById('pwa-update-banner');
+        if (banner) {
+          banner.classList.remove('hidden');
+        }
+      };
+
+      window.applyPendingUpdate = function () {
+        userTriggeredUpdate = true;
+        const btn = document.getElementById('pwa-update-btn');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">sync</span> Atualizando...';
+        }
+
+        if (waitingWorker) {
+          waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+        } else if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistration().then((reg) => {
+            if (reg && reg.waiting) {
+              reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            } else {
+              window.location.reload();
+            }
+          }).catch(() => {
+            window.location.reload();
+          });
+        } else {
           window.location.reload();
         }
-      });
+      };
 
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then((reg) => {
-            console.log('[PWA] Service Worker registrado com sucesso! Escopo:', reg.scope);
+      if ('serviceWorker' in navigator) {
+        // ONLY reload if the controller change was explicitly requested by the user
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (userTriggeredUpdate && !isRefreshing) {
+            isRefreshing = true;
+            console.log('[PWA] Nova versão ativada pelo usuário! Recarregando...');
+            window.location.reload();
+          }
+        });
 
-            // Proactively check for SW updates
-            reg.update().catch(() => {});
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then((reg) => {
+              console.log('[PWA] Service Worker registrado! Escopo:', reg.scope);
 
-            // Handle when a new worker is found
-            reg.addEventListener('updatefound', () => {
-              const newWorker = reg.installing;
-              if (newWorker) {
-                newWorker.addEventListener('statechange', () => {
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('[PWA] Nova versão pronta! Solicitando ativação imediata...');
-                    newWorker.postMessage({ type: 'SKIP_WAITING' });
-                  }
-                });
+              // 1. Check if there is already a worker waiting from a previous session
+              if (reg.waiting) {
+                console.log('[PWA] Versão aguardando ativação detectada no início da sessão.');
+                window.showUpdateBanner(reg.waiting);
               }
-            });
 
-            // iOS PWA & Mobile Foreground Check: Check for updates when app gains focus or becomes visible
-            document.addEventListener('visibilitychange', () => {
-              if (document.visibilityState === 'visible') {
-                reg.update().catch(() => {});
-              }
-            });
-            window.addEventListener('focus', () => {
+              // 2. Proactively check for SW updates
               reg.update().catch(() => {});
+
+              // 3. Listen for new update installation
+              reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    // Only show banner if there is already an active controller (meaning it is an update, not first visit)
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      console.log('[PWA] Nova versão instalada e pronta para ativação sob demanda.');
+                      window.showUpdateBanner(newWorker);
+                    }
+                  });
+                }
+              });
+
+              // 4. iOS PWA & Mobile Foreground Check: Check for updates when app gains focus or becomes visible
+              document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                  reg.update().catch(() => {});
+                  if (reg.waiting) {
+                    window.showUpdateBanner(reg.waiting);
+                  }
+                }
+              });
+              window.addEventListener('focus', () => {
+                reg.update().catch(() => {});
+                if (reg.waiting) {
+                  window.showUpdateBanner(reg.waiting);
+                }
+              });
+            })
+            .catch((err) => {
+              console.warn('[PWA] Falha ao registrar Service Worker:', err);
             });
-          })
-          .catch((err) => {
-            console.warn('[PWA] Falha ao registrar Service Worker:', err);
-          });
-      });
-    }
+        });
+      }
+    })();
   </script>
 </body>
 </html>

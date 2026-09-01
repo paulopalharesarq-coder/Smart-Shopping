@@ -130,6 +130,40 @@ function renderApp() {
   `;
 }
 
+// Automatic Dark Mode synchronization with OS preference (prefers-color-scheme)
+function initAutoDarkMode() {
+  if (typeof window === 'undefined' || !window.matchMedia) return;
+
+  const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  
+  function applyTheme(isDark) {
+    if (typeof document === 'undefined') return;
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    }
+  }
+
+  // Set initial theme based on system preference
+  applyTheme(darkModeMediaQuery.matches);
+
+  // Listen to real-time OS preference changes without reload
+  if (darkModeMediaQuery.addEventListener) {
+    darkModeMediaQuery.addEventListener('change', (e) => {
+      applyTheme(e.matches);
+    });
+  } else if (darkModeMediaQuery.addListener) {
+    darkModeMediaQuery.addListener((e) => {
+      applyTheme(e.matches);
+    });
+  }
+}
+
+initAutoDarkMode();
+
 // Initialize on DOM ready or immediately if already loaded
 function initApp() {
   renderApp();
@@ -138,17 +172,21 @@ function initApp() {
   });
 
   // ESC key to close modals
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      window.closeModal();
-    }
-  });
+  if (typeof document !== 'undefined') {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        window.closeModal();
+      }
+    });
+  }
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initApp);
-} else {
-  initApp();
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
 }
 
 

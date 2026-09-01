@@ -71,8 +71,8 @@ const swContent = fs.readFileSync(path.join(__dirname, '../sw.js'), 'utf8');
 const vercelContent = fs.readFileSync(path.join(__dirname, '../vercel.json'), 'utf8');
 const indexContent = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 
-assert(swContent.includes("CACHE_NAME = 'minhas-compras-v1.1.0'"), 'sw.js possui versionamento de cache atualizado (v1.1.0)');
-assert(swContent.includes('self.skipWaiting()'), 'sw.js executa skipWaiting() no install');
+assert(swContent.includes("CACHE_NAME = 'minhas-compras-v"), 'sw.js possui versionamento de cache dinâmico');
+assert(swContent.includes('self.skipWaiting()'), 'sw.js executa skipWaiting() sob demanda via SKIP_WAITING');
 assert(swContent.includes('self.clients.claim()'), 'sw.js executa clients.claim() no activate');
 assert(swContent.includes('caches.delete(cacheName)'), 'sw.js remove caches antigos automaticamente');
 assert(vercelContent.includes('no-cache, no-store, must-revalidate'), 'vercel.json define no-cache para index.html e sw.js');

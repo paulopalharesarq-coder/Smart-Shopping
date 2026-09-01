@@ -15,8 +15,8 @@ window.renderCategoriesView = function () {
     const totalItems = store.state.lists.reduce((acc, l) => acc + (l.items?.filter(i => i.categoryId === cat.id).length || 0), 0);
 
     return `
-      <div class="category-draggable w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border border-outline-variant/30 hover:opacity-95 shadow-sm" 
-           style="background-color: ${cat.bgColor}; border-color: ${cat.borderColor || 'transparent'}"
+      <div class="category-draggable category-item-card w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border border-outline-variant/30 hover:opacity-95 shadow-sm" 
+           style="--cat-bg: ${cat.bgColor}; --cat-border: ${cat.borderColor || 'transparent'}; --cat-text: ${cat.textColor}; border-color: ${cat.borderColor || 'transparent'}"
            draggable="true"
            data-cat-id="${cat.id}"
            data-index="${idx}">
@@ -27,7 +27,7 @@ window.renderCategoriesView = function () {
             <span class="material-symbols-outlined text-[20px]">drag_indicator</span>
           </div>
 
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/75 backdrop-blur-sm shadow-sm shrink-0" style="color: ${cat.textColor}">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-surface-container-lowest/80 backdrop-blur-sm shadow-sm shrink-0" style="color: ${cat.textColor}">
             <span class="material-symbols-outlined text-[22px]">${cat.icon}</span>
           </div>
 
@@ -39,7 +39,7 @@ window.renderCategoriesView = function () {
 
         <!-- Action Controls: Up/Down reorder + Edit -->
         <div class="flex items-center gap-1 shrink-0">
-          <div class="flex items-center bg-white/60 backdrop-blur-sm rounded-xl p-0.5 border border-black/5 mr-1">
+          <div class="flex items-center bg-surface-container-lowest/70 backdrop-blur-sm rounded-xl p-0.5 border border-outline-variant/30 mr-1">
             <button onclick="window.shoppingStore.moveCategory('${cat.id}', -1)" 
                     class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface disabled:opacity-20 disabled:pointer-events-none active:scale-90 transition-transform cursor-pointer" 
                     ${isFirst ? 'disabled' : ''} 
@@ -54,7 +54,7 @@ window.renderCategoriesView = function () {
             </button>
           </div>
 
-          <button onclick="window.openCategoryModal('${cat.id}')" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/5 text-on-surface-variant active:scale-90 transition-transform" title="Editar">
+          <button onclick="window.openCategoryModal('${cat.id}')" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-variant/50 text-on-surface-variant active:scale-90 transition-transform" title="Editar">
             <span class="material-symbols-outlined text-[19px]">edit</span>
           </button>
         </div>
@@ -67,7 +67,7 @@ window.renderCategoriesView = function () {
     return `
       <div class="flex items-center justify-between p-3 bg-surface-container rounded-xl border border-outline-variant/30 hover:bg-surface-variant transition-colors">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: ${cat.bgColor}; color: ${cat.textColor}">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-surface-container-lowest/80 border border-outline-variant/30" style="color: ${cat.textColor}">
             <span class="material-symbols-outlined text-[18px]">${cat.icon}</span>
           </div>
           <div>

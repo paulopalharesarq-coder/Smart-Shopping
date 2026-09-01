@@ -3,7 +3,7 @@
  * Provides robust offline functionality, instant loads and asset caching.
  */
 
-const CACHE_NAME = 'minhas-compras-v1.1.0';
+const CACHE_NAME = 'minhas-compras-v202609012146';
 
 const PRECACHE_ASSETS = [
   './',
@@ -20,6 +20,7 @@ const PRECACHE_ASSETS = [
   './js/views/categoriesView.js',
   './js/views/historyView.js',
   './js/views/settingsView.js',
+  './icons/favicon-32.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
@@ -28,7 +29,7 @@ const PRECACHE_ASSETS = [
   './icons/icon.svg'
 ];
 
-// Installation: Pre-cache core application shell
+// Installation: Pre-cache core application shell (remains in waiting state until user confirms update)
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
@@ -38,7 +39,6 @@ self.addEventListener('install', (event) => {
       } catch (err) {
         console.warn('[SW] Pre-cache partial warning:', err);
       }
-      return self.skipWaiting();
     })
   );
 });

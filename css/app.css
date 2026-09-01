@@ -1,26 +1,139 @@
 /* Lumina Lifestyle - Smart Monthly Shopping Manager Styles */
 
+/* ==========================================================================
+   Design Tokens - Light Mode (Default)
+   ========================================================================== */
 :root {
   --color-primary: #944a00;
+  --color-on-primary: #ffffff;
   --color-primary-container: #e67e22;
   --color-on-primary-container: #502600;
   --color-primary-fixed: #ffdcc5;
   --color-primary-fixed-dim: #ffb783;
+  --color-on-primary-fixed: #301400;
+  --color-on-primary-fixed-variant: #713700;
+  --color-inverse-primary: #ffb783;
+
   --color-secondary: #006d37;
+  --color-on-secondary: #ffffff;
   --color-secondary-container: #7bf8a1;
+  --color-on-secondary-container: #007239;
+  --color-secondary-fixed: #7efba4;
+  --color-secondary-fixed-dim: #61de8a;
+  --color-on-secondary-fixed: #00210c;
+  --color-on-secondary-fixed-variant: #005228;
+
   --color-tertiary: #b4271d;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #ff6856;
+  --color-on-tertiary-container: #6a0001;
+  --color-tertiary-fixed: #ffdad5;
+  --color-tertiary-fixed-dim: #ffb4a9;
+  --color-on-tertiary-fixed: #410000;
+  --color-on-tertiary-fixed-variant: #910807;
+
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
   --color-background: #fff8f5;
+  --color-on-background: #231a13;
   --color-surface: #fff8f5;
+  --color-on-surface: #231a13;
+  --color-surface-dim: #e9d6cc;
+  --color-surface-bright: #fff8f5;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #fff1ea;
   --color-surface-container: #feeadf;
   --color-surface-container-high: #f8e4da;
-  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-highest: #f2dfd4;
   --color-surface-variant: #f2dfd4;
-  --color-on-surface: #231a13;
   --color-on-surface-variant: #564337;
+  --color-inverse-surface: #392e27;
+  --color-inverse-on-surface: #ffede4;
+  --color-surface-tint: #944a00;
+
   --color-outline: #897365;
   --color-outline-variant: #dcc1b1;
+
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(220, 193, 177, 0.4);
+  --glass-total-bar: rgba(255, 255, 255, 0.55);
+  --modal-backdrop: rgba(0, 0, 0, 0.45);
+  --shadow-color: rgba(148, 74, 0, 0.08);
 }
 
+/* ==========================================================================
+   Design Tokens - Dark Mode (Warm, High-Contrast Lumina Dark)
+   ========================================================================== */
+html.dark,
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #ffb783;
+    --color-on-primary: #4f2500;
+    --color-primary-container: #e67e22;
+    --color-on-primary-container: #ffe0cb;
+    --color-primary-fixed: #3d2212;
+    --color-primary-fixed-dim: #5c341c;
+    --color-on-primary-fixed: #ffdcc5;
+    --color-on-primary-fixed-variant: #ffb783;
+    --color-inverse-primary: #944a00;
+
+    --color-secondary: #61de8a;
+    --color-on-secondary: #00391a;
+    --color-secondary-container: #005228;
+    --color-on-secondary-container: #a3e9b8;
+    --color-secondary-fixed: #163820;
+    --color-secondary-fixed-dim: #235431;
+    --color-on-secondary-fixed: #a3e9b8;
+    --color-on-secondary-fixed-variant: #61de8a;
+
+    --color-tertiary: #ffb4a9;
+    --color-on-tertiary: #680003;
+    --color-tertiary-container: #93000a;
+    --color-on-tertiary-container: #ffdad4;
+    --color-tertiary-fixed: #441713;
+    --color-tertiary-fixed-dim: #64231d;
+    --color-on-tertiary-fixed: #ffdad4;
+    --color-on-tertiary-fixed-variant: #ffb4a9;
+
+    --color-error: #ffb4ab;
+    --color-on-error: #690005;
+    --color-error-container: #93000a;
+    --color-on-error-container: #ffdad6;
+
+    --color-background: #18120d;
+    --color-on-background: #f2dfd4;
+    --color-surface: #18120d;
+    --color-on-surface: #f2dfd4;
+    --color-surface-dim: #18120d;
+    --color-surface-bright: #3f3128;
+    --color-surface-container-lowest: #1f1712;
+    --color-surface-container-low: #241b15;
+    --color-surface-container: #2b2019;
+    --color-surface-container-high: #33271f;
+    --color-surface-container-highest: #3e3027;
+    --color-surface-variant: #33271f;
+    --color-on-surface-variant: #d5c3b7;
+    --color-inverse-surface: #f2dfd4;
+    --color-inverse-on-surface: #231a13;
+    --color-surface-tint: #ffb783;
+
+    --color-outline: #9f8c7e;
+    --color-outline-variant: #534237;
+
+    --glass-bg: rgba(36, 27, 21, 0.85);
+    --glass-border: rgba(83, 66, 55, 0.65);
+    --glass-total-bar: rgba(31, 23, 18, 0.88);
+    --modal-backdrop: rgba(0, 0, 0, 0.68);
+    --shadow-color: rgba(0, 0, 0, 0.35);
+  }
+}
+
+/* ==========================================================================
+   Base Elements
+   ========================================================================== */
 body {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--color-background);
@@ -30,6 +143,7 @@ body {
   margin: 0;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Material Symbols configuration */
@@ -47,25 +161,25 @@ body {
 
 /* Glassmorphism Classes */
 .glass-panel {
-  background-color: rgba(255, 255, 255, 0.75);
+  background-color: var(--glass-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(220, 193, 177, 0.4);
+  border: 1px solid var(--glass-border);
 }
 
 .glass-nav {
-  background-color: rgba(255, 248, 245, 0.85);
+  background-color: var(--glass-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid rgba(220, 193, 177, 0.4);
+  border-top: 1px solid var(--glass-border);
 }
 
 .glass-total-bar {
-  background-color: rgba(255, 255, 255, 0.42);
-  backdrop-filter: blur(10px) saturate(160%);
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
-  border: 1px solid rgba(220, 193, 177, 0.4);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.07);
+  background-color: var(--glass-total-bar);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 30px var(--shadow-color);
 }
 
 /* Smooth transitions & animations */
@@ -161,10 +275,10 @@ input[type=number] {
   width: 20px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
+  background-color: #ffffff;
   transition: .3s;
   border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 input:checked + .slider {
   background-color: var(--color-primary-container);
@@ -187,6 +301,22 @@ input:checked + .slider:before {
   background-color: #feeadf;
 }
 
+html.dark .price-up,
+@media (prefers-color-scheme: dark) {
+  html:not(.light) .price-up {
+    color: #ffb4ab;
+    background-color: #561e18;
+  }
+  html:not(.light) .price-down {
+    color: #7bf8a1;
+    background-color: #0b3d1c;
+  }
+  html:not(.light) .price-equal {
+    color: #d5c3b7;
+    background-color: #33271f;
+  }
+}
+
 /* App container constraints */
 .app-container {
   max-width: 540px;
@@ -195,8 +325,9 @@ input:checked + .slider:before {
   min-height: 100dvh;
   position: relative;
   background-color: var(--color-background);
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 40px var(--shadow-color);
   padding-top: env(safe-area-inset-top, 0px);
+  transition: background-color 0.25s ease;
 }
 
 /* Mobile Safe Areas for Navigation Bar and Sticky Elements */
@@ -213,7 +344,7 @@ input:checked + .slider:before {
   background: white;
   padding: 16px;
   border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(148, 74, 0, 0.08);
+  box-shadow: 0 10px 25px var(--shadow-color);
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -258,7 +389,7 @@ input, textarea {
 .category-draggable.dragging {
   opacity: 0.55;
   transform: scale(0.98);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
   cursor: grabbing;
 }
 
@@ -270,10 +401,33 @@ input, textarea {
   border-bottom: 3px solid var(--color-primary) !important;
 }
 
+/* Category Item Card Theme Adaptation */
+.category-item-card {
+  background-color: var(--cat-bg, var(--color-surface-container));
+  border-color: var(--cat-border, transparent);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+html.dark .category-item-card,
+@media (prefers-color-scheme: dark) {
+  html:not(.light) .category-item-card {
+    background-color: var(--color-surface-container) !important;
+    border-color: var(--cat-border, var(--color-outline-variant)) !important;
+  }
+}
+
 /* Missing Price Warning in Cart */
 .cart-missing-price-card {
   border-color: #ffb4a9 !important;
   background-color: #fff4f1 !important;
+}
+
+html.dark .cart-missing-price-card,
+@media (prefers-color-scheme: dark) {
+  html:not(.light) .cart-missing-price-card {
+    border-color: #ffb4a9 !important;
+    background-color: #3e1b18 !important;
+  }
 }
 
 .cart-missing-price-badge {
@@ -281,6 +435,15 @@ input, textarea {
   color: #ba1a1a;
   border: 1px solid #ffb4a9;
   animation: pulseBadge 2s infinite ease-in-out;
+}
+
+html.dark .cart-missing-price-badge,
+@media (prefers-color-scheme: dark) {
+  html:not(.light) .cart-missing-price-badge {
+    background-color: #561e18;
+    color: #ffb4ab;
+    border-color: #792a22;
+  }
 }
 
 @keyframes pulseBadge {
@@ -306,8 +469,8 @@ input, textarea {
   font-size: 20px;
   background-color: var(--color-surface);
   color: var(--color-on-surface);
-  border: 1px solid rgba(220, 193, 177, 0.45);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--color-outline-variant);
+  box-shadow: 0 2px 4px var(--shadow-color);
   transition: all 0.12s ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -332,7 +495,7 @@ input, textarea {
 .keypad-btn-submit {
   background-color: var(--color-primary-container);
   color: var(--color-on-primary-container);
-  box-shadow: 0 4px 12px rgba(230, 126, 34, 0.25);
+  box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3);
 }
 
 .keypad-btn-submit:active {

@@ -120,8 +120,8 @@ window.renderCartView = function () {
         : `1px solid ${categoryBorderColor || 'transparent'}`;
 
       return `
-        <div class="rounded-2xl p-3.5 flex justify-between items-center transition-all shadow-sm" 
-             style="background-color: ${categoryBgColor}; border: ${cardBorder}">
+        <div class="category-item-card rounded-2xl p-3.5 flex justify-between items-center transition-all shadow-sm" 
+             style="--cat-bg: ${categoryBgColor}; --cat-border: ${categoryBorderColor || 'transparent'}; border: ${cardBorder}">
           
           <!-- Left Column: Name & Quantity Stepper -->
           <div class="flex flex-col gap-1.5 flex-1 min-w-0 pr-2">
@@ -132,7 +132,7 @@ window.renderCartView = function () {
             </h3>
 
             <!-- Quantity Stepper -->
-            <div class="flex items-center bg-white/80 backdrop-blur-sm rounded-full w-fit px-1 py-0.5 shadow-sm border border-black/5">
+            <div class="flex items-center bg-surface-container-lowest/80 backdrop-blur-sm rounded-full w-fit px-1 py-0.5 shadow-sm border border-outline-variant/30">
               <button onclick="window.shoppingStore.updateItemQuantity('${list.id}', '${item.id}', -1)" 
                       class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-90 transition-transform cursor-pointer"
                       title="Diminuir">
@@ -151,15 +151,15 @@ window.renderCartView = function () {
 
           <!-- Right Column: Price Display, Numeric Keypad Trigger, More Menu -->
           <div class="flex flex-col items-end gap-1 ml-2 shrink-0">
-            <button type="button" onclick="window.openItemModal('${list.id}', '${item.id}')" class="text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-full hover:bg-black/5 cursor-pointer" title="Opções">
+            <button type="button" onclick="window.openItemModal('${list.id}', '${item.id}')" class="text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-full hover:bg-surface-variant/50 cursor-pointer" title="Opções">
               <span class="material-symbols-outlined text-[18px]">more_vert</span>
             </button>
 
             ${isMissingPrice ? `
               <!-- Evident Missing Price Alert Badge -->
               <button type="button" onclick="window.openNumericKeypad('${list.id}', '${item.id}')" 
-                      class="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer border"
-                      style="background-color: white; color: ${categoryTextColor || '#ba1a1a'}; border-color: ${categoryTextColor || '#ba1a1a'};"
+                      class="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer border bg-surface-container-lowest"
+                      style="color: ${categoryTextColor || '#ba1a1a'}; border-color: ${categoryTextColor || '#ba1a1a'};"
                       title="Item sem preço! Toque para inserir o valor">
                 <span class="material-symbols-outlined text-[16px] font-bold">dialpad</span>
                 <span>Inserir valor</span>

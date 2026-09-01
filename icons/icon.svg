@@ -1,52 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <linearGradient id="luminaBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#944a00"/>
-      <stop offset="50%" stop-color="#b85d00"/>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fdf4ec"/>
+      <stop offset="100%" stop-color="#f5e3d3"/>
+    </linearGradient>
+    <filter id="softShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#7a4216" flood-opacity="0.16"/>
+    </filter>
+    <filter id="cartShadow" x="-15%" y="-15%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#804107" flood-opacity="0.22"/>
+    </filter>
+    <linearGradient id="orangeLayer" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffb783"/>
       <stop offset="100%" stop-color="#e67e22"/>
     </linearGradient>
-    <linearGradient id="basketGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+    <linearGradient id="creamLayer" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#fff1ea"/>
+      <stop offset="100%" stop-color="#faefe6"/>
     </linearGradient>
-    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#502600" flood-opacity="0.35"/>
-    </filter>
-    <filter id="innerGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.12"/>
-    </filter>
+    <linearGradient id="wheelGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd5b5"/>
+      <stop offset="100%" stop-color="#f29f57"/>
+    </linearGradient>
   </defs>
 
-  <!-- Background with rounded squircles -->
-  <rect width="512" height="512" rx="118" fill="url(#luminaBg)"/>
-  
-  <!-- Subtle inner background highlight ring -->
-  <rect x="12" y="12" width="488" height="488" rx="106" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="4"/>
+  <!-- Base Rounded Card -->
+  <rect x="32" y="32" width="448" height="448" rx="105" fill="url(#bgGrad)" filter="url(#softShadow)"/>
 
-  <!-- Main Shopping Basket Illustration -->
-  <g filter="url(#shadow)">
-    <!-- Basket Handle Arc -->
-    <path d="M 176 230 C 176 145, 336 145, 336 230" fill="none" stroke="url(#basketGrad)" stroke-width="26" stroke-linecap="round"/>
+  <!-- Orange 3D Bottom Layer -->
+  <path d="M 130 160 C 130 150 142 142 154 146 L 180 156 C 190 160 196 172 200 188 L 220 280 C 224 298 240 312 260 312 L 375 312 C 392 312 406 298 410 282 L 424 200 C 428 178 410 160 388 160 L 205 160" 
+        fill="url(#orangeLayer)" 
+        filter="url(#cartShadow)"/>
 
-    <!-- Basket Body -->
-    <path d="M 126 230 L 386 230 C 394 230, 400 237, 398 245 L 366 380 C 362 396, 348 408, 332 408 L 180 408 C 164 408, 150 396, 146 380 L 114 245 C 112 237, 118 230, 126 230 Z" fill="url(#basketGrad)" filter="url(#innerGlow)"/>
+  <!-- 3D Wheels -->
+  <circle cx="205" cy="380" r="34" fill="url(#wheelGrad)" filter="url(#cartShadow)"/>
+  <circle cx="205" cy="380" r="24" fill="#faefe6" opacity="0.4"/>
+  <circle cx="355" cy="380" r="34" fill="url(#wheelGrad)" filter="url(#cartShadow)"/>
+  <circle cx="355" cy="380" r="24" fill="#faefe6" opacity="0.4"/>
 
-    <!-- Basket Woven Accent Lines -->
-    <path d="M 175 258 L 195 385" stroke="#944a00" stroke-width="10" stroke-linecap="round" opacity="0.4"/>
-    <path d="M 256 258 L 256 385" stroke="#944a00" stroke-width="10" stroke-linecap="round" opacity="0.4"/>
-    <path d="M 337 258 L 317 385" stroke="#944a00" stroke-width="10" stroke-linecap="round" opacity="0.4"/>
-    <path d="M 140 320 L 372 320" stroke="#944a00" stroke-width="10" stroke-linecap="round" opacity="0.3"/>
-
-    <!-- Sparkle / Smart Badge Icon -->
-    <g transform="translate(325, 125)">
-      <circle cx="42" cy="42" r="46" fill="#7bf8a1"/>
-      <path d="M 42 16 L 47 34 L 65 42 L 47 50 L 42 68 L 37 50 L 19 42 L 37 34 Z" fill="#006d37"/>
-    </g>
-
-    <!-- Small Sparkle Icon -->
-    <g transform="translate(115, 155) scale(0.65)">
-      <circle cx="30" cy="30" r="30" fill="#ffdcc5"/>
-      <path d="M 30 10 L 34 24 L 48 30 L 34 36 L 30 50 L 26 36 L 12 30 L 26 24 Z" fill="#944a00"/>
-    </g>
-  </g>
+  <!-- Cream 3D Top Layer / Shopping Basket -->
+  <path d="M 125 150 C 112 150 102 160 102 172 C 102 184 112 194 125 194 L 148 194 C 158 194 167 200 171 210 L 195 272 C 204 296 226 312 252 312 L 375 312 C 396 312 414 296 420 275 L 434 200 C 438 182 424 166 406 166 L 185 166" 
+        fill="url(#creamLayer)" 
+        stroke="rgba(255,255,255,0.85)" 
+        stroke-width="6" 
+        filter="url(#cartShadow)"/>
 </svg>
