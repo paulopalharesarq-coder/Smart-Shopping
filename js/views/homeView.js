@@ -198,6 +198,7 @@ window.resetSwipedCards = function (exceptCard = null) {
 };
 
 window.attachSwipeListeners = function () {
+  if (typeof document === 'undefined') return;
   const cards = document.querySelectorAll('[data-swipe-card="true"]');
   if (!cards.length) return;
 

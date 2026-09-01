@@ -169,8 +169,18 @@ class ShoppingStore {
   }
 
   getCategoryById(id) {
+    if (!id || id === 'sem-categoria') {
+      return {
+        id: null,
+        name: 'Sem categoria',
+        icon: 'folder_open',
+        bgColor: '#f2dfd4',
+        textColor: '#564337',
+        borderColor: '#dcc1b1'
+      };
+    }
     return this.state.categories.find(c => c.id === id) || {
-      id: 'outros',
+      id: id,
       name: 'Outros',
       icon: 'category',
       bgColor: '#feeadf',
@@ -228,15 +238,18 @@ class ShoppingStore {
 
     if (!list.items) list.items = [];
 
+    const rawCategory = itemData.categoryId;
+    const cleanCategory = (rawCategory && typeof rawCategory === 'string' && rawCategory.trim() !== '' && rawCategory !== 'sem-categoria') ? rawCategory.trim() : null;
+
     const newItem = {
       id: 'item-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
       name: itemData.name.trim(),
-      categoryId: itemData.categoryId || 'mercearia',
+      categoryId: cleanCategory,
       quantity: Number(itemData.quantity) || 1,
       unit: itemData.unit || 'unid',
       currentPrice: Number(itemData.currentPrice) || 0,
       previousPrice: Number(itemData.previousPrice) || Number(itemData.currentPrice) || 0,
-      bought: false
+      bought: true // Requirement 7: Every new product enters cart automatically
     };
 
     list.items.push(newItem);
@@ -297,6 +310,11 @@ class ShoppingStore {
     const item = list.items.find(i => i.id === itemId);
     if (!item) return;
 
+    if (updated.categoryId !== undefined) {
+      const rawCat = updated.categoryId;
+      updated.categoryId = (rawCat && typeof rawCat === 'string' && rawCat.trim() !== '' && rawCat !== 'sem-categoria') ? rawCat.trim() : null;
+    }
+
     Object.assign(item, updated);
     this.saveState();
   }
@@ -312,12 +330,12 @@ class ShoppingStore {
       items = activeList.items.map(item => ({
         id: 'item-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
         name: item.name,
-        categoryId: item.categoryId,
+        categoryId: item.categoryId || null,
         quantity: item.quantity,
         unit: item.unit,
         currentPrice: item.currentPrice,
         previousPrice: item.currentPrice || item.previousPrice,
-        bought: false
+        bought: true // Requirement 7: Cloned items start in cart
       }));
     }
 
@@ -406,12 +424,42 @@ class ShoppingStore {
     this.saveState();
   }
 
+  reorderCategories(fromIndex, toIndex) {
+    if (fromIndex < 0 || fromIndex >= this.state.categories.length) return;
+    if (toIndex < 0 || toIndex >= this.state.categories.length) return;
+    if (fromIndex === toIndex) return;
+
+    const [movedCat] = this.state.categories.splice(fromIndex, 1);
+    this.state.categories.splice(toIndex, 0, movedCat);
+    this.saveState();
+  }
+
+  moveCategory(id, direction) {
+    const currentIndex = this.state.categories.findIndex(c => c.id === id);
+    if (currentIndex === -1) return;
+
+    const targetIndex = currentIndex + direction;
+    if (targetIndex >= 0 && targetIndex < this.state.categories.length) {
+      this.reorderCategories(currentIndex, targetIndex);
+    }
+  }
+
+  setCategories(newCategories) {
+    if (Array.isArray(newCategories)) {
+      this.state.categories = newCategories;
+      this.saveState();
+    }
+  }
+
   // Pantry Management
   addPantryItem(item) {
+    const rawCat = item.categoryId;
+    const cleanCategory = (rawCat && typeof rawCat === 'string' && rawCat.trim() !== '' && rawCat !== 'sem-categoria') ? rawCat.trim() : null;
+
     this.state.pantry.push({
       id: 'p-' + Date.now(),
       name: item.name.trim(),
-      categoryId: item.categoryId || 'mercearia',
+      categoryId: cleanCategory,
       unit: item.unit || 'unid',
       defaultPrice: Number(item.defaultPrice) || 0
     });

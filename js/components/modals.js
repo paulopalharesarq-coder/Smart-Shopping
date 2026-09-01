@@ -109,6 +109,245 @@ window.confirmCreateList = function (baseOnPrevious) {
   window.showToast(baseOnPrevious ? 'Lista criada com itens clonados!' : 'Nova lista vazia criada!', 'success');
 };
 
+// Helper to update visual radio selection state
+window.selectCategoryRadio = function (labelEl) {
+  const container = labelEl.closest('.category-radio-group');
+  if (container) {
+    container.querySelectorAll('.category-radio-label').forEach(lbl => {
+      lbl.classList.remove('border-primary', 'bg-primary-fixed', 'font-bold');
+      lbl.classList.add('border-transparent');
+    });
+  }
+  labelEl.classList.remove('border-transparent');
+  labelEl.classList.add('border-primary', 'bg-primary-fixed', 'font-bold');
+  const radio = labelEl.querySelector('input[type="radio"]');
+  if (radio) radio.checked = true;
+};
+
+// Numeric Keypad State & Controller
+let keypadState = {
+  listId: null,
+  itemId: null,
+  targetInputId: null,
+  itemQty: 1,
+  cents: 0
+};
+
+window.openNumericKeypad = function (listId, itemId = null, targetInputId = null) {
+  const store = window.shoppingStore;
+  let list = null;
+  let item = null;
+  let currentPrice = 0;
+  let itemName = 'Preço do Produto';
+  let itemUnit = 'unid';
+  let itemQty = 1;
+
+  if (listId) {
+    list = store.getListById(listId) || store.getActiveList();
+    if (itemId && list && list.items) {
+      item = list.items.find(i => i.id === itemId);
+      if (item) {
+        currentPrice = Number(item.currentPrice) || 0;
+        itemName = item.name;
+        itemUnit = item.unit || 'unid';
+        itemQty = Number(item.quantity) || 1;
+      }
+    }
+  }
+
+  // If opened from a form input (like openItemModal)
+  if (targetInputId) {
+    const inputEl = document.getElementById(targetInputId);
+    if (inputEl && inputEl.value) {
+      currentPrice = parseFloat(inputEl.value) || 0;
+    }
+    const nameInput = document.getElementById('item-name-input');
+    if (nameInput && nameInput.value.trim()) {
+      itemName = nameInput.value.trim();
+    }
+    const unitInput = document.getElementById('item-unit-input');
+    if (unitInput && unitInput.value) {
+      itemUnit = unitInput.value;
+    }
+    const qtyInput = document.getElementById('item-qty-input');
+    if (qtyInput && qtyInput.value) {
+      itemQty = parseFloat(qtyInput.value) || 1;
+    }
+  }
+
+  keypadState = {
+    listId,
+    itemId,
+    targetInputId,
+    itemQty,
+    cents: Math.round(currentPrice * 100)
+  };
+
+  const formattedDisplay = (keypadState.cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  const modalHtml = `
+    <div id="keypad-modal-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeKeypad()">
+      <div class="w-full max-w-[540px] bg-surface-container-lowest rounded-t-3xl p-5 pointer-events-auto shadow-[0px_-10px_40px_rgba(0,0,0,0.3)] relative z-[1000] slide-up pb-[max(1.5rem,calc(0.75rem+env(safe-area-inset-bottom,0px)))] border-t border-primary-fixed-dim/40">
+        <div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-4"></div>
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-3">
+          <div class="flex-1 min-w-0 pr-2">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-primary flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">dialpad</span>
+              Inserir Preço
+            </span>
+            <h3 class="font-headline-md text-base font-bold text-on-surface truncate">${itemName}</h3>
+            <span class="text-xs text-on-surface-variant font-medium">${itemQty} ${itemUnit}</span>
+          </div>
+          <button type="button" onclick="window.closeKeypad()" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface-variant active:scale-95 transition-all cursor-pointer" title="Fechar">
+            <span class="material-symbols-outlined text-[24px]">close</span>
+          </button>
+        </div>
+
+        <!-- Price Display Box -->
+        <div class="bg-surface-container rounded-2xl p-4 text-center border border-outline-variant/40 shadow-inner mb-3">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant block mb-0.5">Valor Unitário</span>
+          <div id="keypad-display" class="font-price-display text-3xl font-extrabold text-primary tracking-tight">
+            ${formattedDisplay}
+          </div>
+          <span class="text-[11px] text-on-surface-variant mt-1 block">
+            Subtotal: <strong id="keypad-subtotal" class="text-on-surface">${((keypadState.cents / 100) * itemQty).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+          </span>
+        </div>
+
+        <!-- Quick Presets Row -->
+        <div class="grid grid-cols-4 gap-2 mb-3">
+          <button type="button" onclick="window.keypadAddValue(1)" class="py-2 px-2 bg-surface-container hover:bg-surface-variant active:scale-95 rounded-xl text-xs font-bold text-on-surface border border-outline-variant/30 transition-all cursor-pointer">
+            +R$ 1
+          </button>
+          <button type="button" onclick="window.keypadAddValue(2)" class="py-2 px-2 bg-surface-container hover:bg-surface-variant active:scale-95 rounded-xl text-xs font-bold text-on-surface border border-outline-variant/30 transition-all cursor-pointer">
+            +R$ 2
+          </button>
+          <button type="button" onclick="window.keypadAddValue(5)" class="py-2 px-2 bg-surface-container hover:bg-surface-variant active:scale-95 rounded-xl text-xs font-bold text-on-surface border border-outline-variant/30 transition-all cursor-pointer">
+            +R$ 5
+          </button>
+          <button type="button" onclick="window.keypadAddValue(10)" class="py-2 px-2 bg-surface-container hover:bg-surface-variant active:scale-95 rounded-xl text-xs font-bold text-on-surface border border-outline-variant/30 transition-all cursor-pointer">
+            +R$ 10
+          </button>
+        </div>
+
+        <!-- Numeric Keypad Grid -->
+        <div class="grid grid-cols-3 gap-2.5 mb-3 select-none">
+          <button type="button" onclick="window.keypadInputDigit(1)" class="keypad-btn cursor-pointer">1</button>
+          <button type="button" onclick="window.keypadInputDigit(2)" class="keypad-btn cursor-pointer">2</button>
+          <button type="button" onclick="window.keypadInputDigit(3)" class="keypad-btn cursor-pointer">3</button>
+
+          <button type="button" onclick="window.keypadInputDigit(4)" class="keypad-btn cursor-pointer">4</button>
+          <button type="button" onclick="window.keypadInputDigit(5)" class="keypad-btn cursor-pointer">5</button>
+          <button type="button" onclick="window.keypadInputDigit(6)" class="keypad-btn cursor-pointer">6</button>
+
+          <button type="button" onclick="window.keypadInputDigit(7)" class="keypad-btn cursor-pointer">7</button>
+          <button type="button" onclick="window.keypadInputDigit(8)" class="keypad-btn cursor-pointer">8</button>
+          <button type="button" onclick="window.keypadInputDigit(9)" class="keypad-btn cursor-pointer">9</button>
+
+          <button type="button" onclick="window.keypadClear()" class="keypad-btn keypad-btn-action text-tertiary cursor-pointer font-bold" title="Limpar">
+            C
+          </button>
+          <button type="button" onclick="window.keypadInputDigit(0)" class="keypad-btn cursor-pointer">0</button>
+          <button type="button" onclick="window.keypadBackspace()" class="keypad-btn keypad-btn-action cursor-pointer" title="Apagar">
+            <span class="material-symbols-outlined text-[24px]">backspace</span>
+          </button>
+        </div>
+
+        <!-- Submit Button -->
+        <button id="keypad-save-btn" type="button" onclick="window.keypadSubmit()" 
+                class="w-full py-4 rounded-2xl bg-primary-container text-on-primary-container font-bold text-base hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer">
+          <span class="material-symbols-outlined text-[22px]">check</span>
+          Confirmar Valor (${formattedDisplay})
+        </button>
+      </div>
+    </div>
+  `;
+
+  const keypadMount = document.getElementById('keypad-container') || document.getElementById('modal-container');
+  if (keypadMount) {
+    keypadMount.innerHTML = modalHtml;
+  }
+};
+
+window.closeKeypad = function () {
+  const keypadContainer = document.getElementById('keypad-container');
+  if (keypadContainer && keypadContainer.innerHTML) {
+    keypadContainer.innerHTML = '';
+  } else {
+    const modalContainer = document.getElementById('modal-container');
+    if (modalContainer && modalContainer.innerHTML.includes('keypad-modal-backdrop')) {
+      modalContainer.innerHTML = '';
+    }
+  }
+};
+
+window.keypadUpdateUI = function () {
+  const qty = Number(keypadState.itemQty) || 1;
+  const currentPrice = keypadState.cents / 100;
+  const formatted = currentPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const formattedSubtotal = (currentPrice * qty).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  const displayEl = document.getElementById('keypad-display');
+  const subtotalEl = document.getElementById('keypad-subtotal');
+  const saveBtnEl = document.getElementById('keypad-save-btn');
+
+  if (displayEl) displayEl.innerText = formatted;
+  if (subtotalEl) subtotalEl.innerText = formattedSubtotal;
+  if (saveBtnEl) saveBtnEl.innerHTML = `<span class="material-symbols-outlined text-[22px]">check</span> Confirmar Valor (${formatted})`;
+};
+
+window.keypadInputDigit = function (digit) {
+  if (keypadState.cents.toString().length >= 8) return;
+  keypadState.cents = keypadState.cents * 10 + digit;
+  window.keypadUpdateUI();
+};
+
+window.keypadBackspace = function () {
+  keypadState.cents = Math.floor(keypadState.cents / 10);
+  window.keypadUpdateUI();
+};
+
+window.keypadClear = function () {
+  keypadState.cents = 0;
+  window.keypadUpdateUI();
+};
+
+window.keypadAddValue = function (amount) {
+  keypadState.cents += amount * 100;
+  window.keypadUpdateUI();
+};
+
+window.keypadSubmit = function () {
+  const newPrice = keypadState.cents / 100;
+
+  // If opened from a form input (like item modal)
+  if (keypadState.targetInputId) {
+    const inputEl = document.getElementById(keypadState.targetInputId);
+    if (inputEl) {
+      inputEl.value = newPrice > 0 ? newPrice.toFixed(2) : '';
+      inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    const displayEl = document.getElementById(keypadState.targetInputId + '-display');
+    if (displayEl) {
+      displayEl.innerText = newPrice > 0 ? (newPrice).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : (keypadState.targetInputId === 'item-prev-price-input' ? 'Opcional' : 'R$ 0,00');
+    }
+    window.closeKeypad();
+    window.showToast(`Valor definido: ${(newPrice).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 'info');
+    return;
+  }
+
+  // Direct from Cart View
+  if (keypadState.listId && keypadState.itemId) {
+    window.shoppingStore.updateItemPrice(keypadState.listId, keypadState.itemId, newPrice);
+    window.closeKeypad();
+    window.showToast(`Preço salvo: ${(newPrice).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 'success');
+  } else {
+    window.closeKeypad();
+  }
+};
+
 // Open Add or Edit Item Modal
 window.openItemModal = function (listId, itemId = null) {
   const store = window.shoppingStore;
@@ -120,16 +359,17 @@ window.openItemModal = function (listId, itemId = null) {
   const pantry = store.state.pantry || [];
 
   const isEdit = !!item;
-  const defaultCategory = item ? item.categoryId : (categories[0]?.id || 'mercearia');
+  // If editing, use existing categoryId (which can be null). If new item, default to null.
+  const currentCategoryId = item ? (item.categoryId || null) : null;
 
   const modalHtml = `
-    <div id="modal-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
-      <div class="w-full max-w-[540px] bg-surface-container-lowest rounded-t-3xl p-6 pointer-events-auto shadow-[0px_-10px_40px_rgba(0,0,0,0.15)] relative z-10 slide-up max-h-[90vh] overflow-y-auto">
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
+      <div class="w-full max-w-[540px] bg-surface-container-lowest rounded-t-3xl p-6 pointer-events-auto shadow-[0px_-10px_40px_rgba(0,0,0,0.15)] relative z-[101] slide-up max-h-[90vh] overflow-y-auto">
         <div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-5"></div>
         
         <div class="flex justify-between items-center mb-5">
           <h2 class="font-headline-md text-headline-md text-on-surface">${isEdit ? 'Editar Item' : 'Adicionar ao Carrinho'}</h2>
-          <button onclick="window.closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface-variant">
+          <button type="button" onclick="window.closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface-variant cursor-pointer">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -140,7 +380,7 @@ window.openItemModal = function (listId, itemId = null) {
             <label class="block font-label-caps text-on-surface-variant uppercase text-xs mb-1.5 font-bold">Sugestões Rápidas da Despensa</label>
             <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
               ${pantry.map(p => `
-                <button type="button" onclick="window.selectPantrySuggestion('${p.name}', '${p.categoryId}', '${p.unit}', ${p.defaultPrice})" class="whitespace-nowrap px-3 py-1.5 rounded-full bg-surface-container hover:bg-surface-variant text-xs text-on-surface flex items-center gap-1.5 border border-outline-variant/30 transition-all active:scale-95">
+                <button type="button" onclick="window.selectPantrySuggestion('${p.name}', '${p.categoryId || ''}', '${p.unit}', ${p.defaultPrice})" class="whitespace-nowrap px-3 py-1.5 rounded-full bg-surface-container hover:bg-surface-variant text-xs text-on-surface flex items-center gap-1.5 border border-outline-variant/30 transition-all active:scale-95 cursor-pointer">
                   <span class="material-symbols-outlined text-[14px]">add</span>
                   ${p.name}
                 </button>
@@ -152,19 +392,36 @@ window.openItemModal = function (listId, itemId = null) {
         <form id="item-form" onsubmit="window.saveItem(event, '${list.id}', ${item ? `'${item.id}'` : 'null'})" class="space-y-4">
           <div>
             <label class="block font-label-caps text-on-surface-variant uppercase text-xs mb-1.5 font-bold">Nome do Produto</label>
-            <input id="item-name-input" required type="text" value="${item ? item.name : ''}" class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/50 focus:border-primary focus:outline-none text-on-surface font-body-lg" placeholder="Ex: Queijo Minas, Café, Tomate...">
+            <input id="item-name-input" required type="text" value="${item ? item.name.replace(/"/g, '&quot;') : ''}" class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/50 focus:border-primary focus:outline-none text-on-surface font-body-lg" placeholder="Ex: Queijo Minas, Café, Tomate...">
           </div>
 
           <div>
-            <label class="block font-label-caps text-on-surface-variant uppercase text-xs mb-1.5 font-bold">Categoria</label>
-            <div class="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto p-1 bg-surface-container/50 rounded-xl border border-outline-variant/30">
-              ${categories.map(cat => `
-                <label class="flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition-all border ${item && item.categoryId === cat.id ? 'border-primary bg-primary-fixed' : 'border-transparent hover:bg-surface-container'}">
-                  <input type="radio" name="itemCategory" value="${cat.id}" ${(!item && cat.id === defaultCategory) || (item && item.categoryId === cat.id) ? 'checked' : ''} class="hidden">
-                  <span class="material-symbols-outlined text-[18px]" style="color: ${cat.textColor}">${cat.icon}</span>
-                  <span class="text-xs font-semibold text-on-surface truncate">${cat.name}</span>
-                </label>
-              `).join('')}
+            <div class="flex justify-between items-center mb-1.5">
+              <label class="block font-label-caps text-on-surface-variant uppercase text-xs font-bold">Categoria</label>
+              <span class="text-[11px] text-on-surface-variant">Opcional</span>
+            </div>
+            
+            <div class="category-radio-group grid grid-cols-2 gap-2 max-h-44 overflow-y-auto p-1.5 bg-surface-container/50 rounded-xl border border-outline-variant/30">
+              <!-- Sem Categoria Option -->
+              <label onclick="window.selectCategoryRadio(this)" 
+                     class="category-radio-label flex items-center gap-2 p-2.5 rounded-xl cursor-pointer transition-all border ${!currentCategoryId ? 'border-primary bg-primary-fixed font-bold' : 'border-transparent hover:bg-surface-container'}">
+                <input type="radio" name="itemCategory" value="" ${!currentCategoryId ? 'checked' : ''} class="hidden">
+                <span class="material-symbols-outlined text-[18px] text-outline">label_off</span>
+                <span class="text-xs font-semibold text-on-surface truncate">Sem categoria</span>
+              </label>
+
+              <!-- Category Options in Custom Stored Order -->
+              ${categories.map(cat => {
+                const isSelected = currentCategoryId === cat.id;
+                return `
+                  <label onclick="window.selectCategoryRadio(this)" 
+                         class="category-radio-label flex items-center gap-2 p-2.5 rounded-xl cursor-pointer transition-all border ${isSelected ? 'border-primary bg-primary-fixed font-bold' : 'border-transparent hover:bg-surface-container'}">
+                    <input type="radio" name="itemCategory" value="${cat.id}" ${isSelected ? 'checked' : ''} class="hidden">
+                    <span class="material-symbols-outlined text-[18px]" style="color: ${cat.textColor}">${cat.icon}</span>
+                    <span class="text-xs font-semibold text-on-surface truncate">${cat.name}</span>
+                  </label>
+                `;
+              }).join('')}
             </div>
           </div>
 
@@ -195,25 +452,46 @@ window.openItemModal = function (listId, itemId = null) {
             </div>
           </div>
 
+          <!-- Keypad-Connected Price Fields -->
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block font-label-caps text-on-surface-variant uppercase text-xs mb-1.5 font-bold">Preço Atual (R$)</label>
-              <input id="item-price-input" type="number" step="0.01" min="0" value="${item ? item.currentPrice : ''}" class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/50 focus:border-primary focus:outline-none text-on-surface font-body-lg" placeholder="0,00">
+              <div onclick="window.openNumericKeypad('${list.id}', ${item ? `'${item.id}'` : 'null'}, 'item-price-input')" 
+                   class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/50 hover:border-primary focus-within:border-primary cursor-pointer flex items-center justify-between transition-all active:scale-[0.99] group shadow-sm">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="material-symbols-outlined text-primary text-[18px]">payments</span>
+                  <span id="item-price-input-display" class="font-price-display text-sm font-bold text-on-surface truncate">
+                    ${item && item.currentPrice > 0 ? (item.currentPrice).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00'}
+                  </span>
+                </div>
+                <span class="material-symbols-outlined text-primary text-[18px] group-hover:scale-110 transition-transform">dialpad</span>
+                <input id="item-price-input" type="hidden" value="${item && item.currentPrice > 0 ? item.currentPrice : ''}">
+              </div>
             </div>
 
             <div>
               <label class="block font-label-caps text-on-surface-variant uppercase text-xs mb-1.5 font-bold">Preço Anterior (R$)</label>
-              <input id="item-prev-price-input" type="number" step="0.01" min="0" value="${item ? item.previousPrice : ''}" class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/50 focus:border-primary focus:outline-none text-on-surface font-body-lg" placeholder="Opcional">
+              <div onclick="window.openNumericKeypad('${list.id}', ${item ? `'${item.id}'` : 'null'}, 'item-prev-price-input')" 
+                   class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/50 hover:border-primary focus-within:border-primary cursor-pointer flex items-center justify-between transition-all active:scale-[0.99] group shadow-sm">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="material-symbols-outlined text-outline text-[18px]">history</span>
+                  <span id="item-prev-price-input-display" class="font-price-display text-xs font-semibold text-on-surface-variant truncate">
+                    ${item && item.previousPrice > 0 ? (item.previousPrice).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'Opcional'}
+                  </span>
+                </div>
+                <span class="material-symbols-outlined text-outline text-[18px] group-hover:scale-110 transition-transform">dialpad</span>
+                <input id="item-prev-price-input" type="hidden" value="${item && item.previousPrice > 0 ? item.previousPrice : ''}">
+              </div>
             </div>
           </div>
 
           <div class="pt-3 flex gap-3">
             ${isEdit ? `
-              <button type="button" onclick="window.confirmDeleteItem('${list.id}', '${item.id}')" class="px-4 py-3.5 rounded-xl bg-error-container text-on-error-container font-semibold flex items-center justify-center hover:opacity-90 transition-opacity">
+              <button type="button" onclick="window.confirmDeleteItem('${list.id}', '${item.id}')" class="px-4 py-3.5 rounded-xl bg-error-container text-on-error-container font-semibold flex items-center justify-center hover:opacity-90 transition-opacity cursor-pointer">
                 <span class="material-symbols-outlined">delete</span>
               </button>
             ` : ''}
-            <button type="submit" class="flex-1 py-3.5 rounded-xl bg-primary-container text-on-primary-container font-bold text-base hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md">
+            <button type="submit" class="flex-1 py-3.5 rounded-xl bg-primary-container text-on-primary-container font-bold text-base hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer">
               <span class="material-symbols-outlined">${isEdit ? 'save' : 'add'}</span>
               ${isEdit ? 'Salvar Alterações' : 'Adicionar ao Carrinho'}
             </button>
@@ -229,28 +507,39 @@ window.openItemModal = function (listId, itemId = null) {
 window.selectPantrySuggestion = function (name, categoryId, unit, defaultPrice) {
   document.getElementById('item-name-input').value = name;
   document.getElementById('item-unit-input').value = unit || 'unid';
-  document.getElementById('item-price-input').value = defaultPrice || '';
-  document.getElementById('item-prev-price-input').value = defaultPrice || '';
 
-  const radio = document.querySelector(`input[name="itemCategory"][value="${categoryId}"]`);
+  const priceInput = document.getElementById('item-price-input');
+  if (priceInput) priceInput.value = defaultPrice > 0 ? defaultPrice : '';
+  const priceDisplay = document.getElementById('item-price-input-display');
+  if (priceDisplay) priceDisplay.innerText = defaultPrice > 0 ? (defaultPrice).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00';
+
+  const prevPriceInput = document.getElementById('item-prev-price-input');
+  if (prevPriceInput) prevPriceInput.value = defaultPrice > 0 ? defaultPrice : '';
+  const prevPriceDisplay = document.getElementById('item-prev-price-input-display');
+  if (prevPriceDisplay) prevPriceDisplay.innerText = defaultPrice > 0 ? (defaultPrice).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'Opcional';
+
+  const radio = document.querySelector(`input[name="itemCategory"][value="${categoryId || ''}"]`);
   if (radio) {
     radio.checked = true;
-    radio.dispatchEvent(new Event('change'));
+    const label = radio.closest('.category-radio-label');
+    if (label) window.selectCategoryRadio(label);
   }
 };
 
 window.saveItem = function (e, listId, itemId) {
   e.preventDefault();
-  const name = document.getElementById('item-name-input').value;
+  const name = document.getElementById('item-name-input').value.trim();
   const categoryRadio = document.querySelector('input[name="itemCategory"]:checked');
-  const categoryId = categoryRadio ? categoryRadio.value : 'mercearia';
+  const rawCat = categoryRadio ? categoryRadio.value : '';
+  const categoryId = (rawCat && rawCat.trim() !== '' && rawCat !== 'sem-categoria') ? rawCat.trim() : null;
+
   const quantity = parseFloat(document.getElementById('item-qty-input').value) || 1;
   const unit = document.getElementById('item-unit-input').value || 'unid';
   const currentPrice = parseFloat(document.getElementById('item-price-input').value) || 0;
   const prevPriceVal = document.getElementById('item-prev-price-input').value;
   const previousPrice = prevPriceVal ? parseFloat(prevPriceVal) : currentPrice;
 
-  if (itemId) {
+  if (itemId && itemId !== 'null') {
     window.shoppingStore.updateItemDetails(listId, itemId, {
       name,
       categoryId,
@@ -295,16 +584,35 @@ window.openCheckoutSummaryModal = function (listId) {
   const isOverBudget = budget > 0 && budgetDiff < 0;
   const budgetBarPercent = budget > 0 ? Math.min(100, (totals.currentTotal / budget) * 100) : 0;
 
-  // Breakdown by category
+  // Breakdown by category in user order + Sem Categoria at the end
   const catBreakdown = {};
+  store.state.categories.forEach(cat => {
+    catBreakdown[cat.id] = { name: cat.name, color: cat.textColor, icon: cat.icon, total: 0, count: 0 };
+  });
+  let uncategorizedTotal = 0;
+  let uncategorizedCount = 0;
+
   if (list.items) {
     list.items.forEach(item => {
-      const cat = store.getCategoryById(item.categoryId);
-      if (!catBreakdown[cat.id]) {
-        catBreakdown[cat.id] = { name: cat.name, color: cat.textColor, icon: cat.icon, total: 0, count: 0 };
+      const itemSubtotal = (Number(item.quantity) || 0) * (Number(item.currentPrice) || 0);
+      if (item.categoryId && catBreakdown[item.categoryId]) {
+        catBreakdown[item.categoryId].total += itemSubtotal;
+        catBreakdown[item.categoryId].count += 1;
+      } else {
+        uncategorizedTotal += itemSubtotal;
+        uncategorizedCount += 1;
       }
-      catBreakdown[cat.id].total += (Number(item.quantity) || 0) * (Number(item.currentPrice) || 0);
-      catBreakdown[cat.id].count += 1;
+    });
+  }
+
+  const activeCategoriesBreakdown = Object.values(catBreakdown).filter(c => c.count > 0);
+  if (uncategorizedCount > 0) {
+    activeCategoriesBreakdown.push({
+      name: 'Sem categoria',
+      color: '#564337',
+      icon: 'folder_open',
+      total: uncategorizedTotal,
+      count: uncategorizedCount
     });
   }
 
@@ -352,7 +660,7 @@ window.openCheckoutSummaryModal = function (listId) {
         <!-- Category breakdown -->
         <h3 class="font-label-caps text-on-surface-variant uppercase text-xs mb-3 font-bold">Gastos por Categoria</h3>
         <div class="space-y-2 mb-6">
-          ${Object.values(catBreakdown).map(c => `
+          ${activeCategoriesBreakdown.length > 0 ? activeCategoriesBreakdown.map(c => `
             <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container/60">
               <div class="flex items-center gap-2.5">
                 <span class="material-symbols-outlined text-[18px]" style="color: ${c.color}">${c.icon}</span>
@@ -360,7 +668,9 @@ window.openCheckoutSummaryModal = function (listId) {
               </div>
               <span class="text-xs font-bold text-on-surface">${c.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
             </div>
-          `).join('')}
+          `).join('') : `
+            <div class="text-center py-3 text-xs text-on-surface-variant">Nenhum gasto registrado ainda.</div>
+          `}
         </div>
 
         <div class="space-y-3">
@@ -394,21 +704,43 @@ window.shareWhatsApp = function (listId) {
   text += `📅 ${new Date().toLocaleDateString('pt-BR')}\n`;
   text += `📊 Total: ${totals.currentTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} (${totals.totalItems} itens)\n\n`;
 
-  if (list.items) {
-    // Group by category
-    const grouped = {};
-    list.items.forEach(i => {
-      const cat = store.getCategoryById(i.categoryId);
-      if (!grouped[cat.name]) grouped[cat.name] = [];
-      grouped[cat.name].push(i);
+  if (list.items && list.items.length > 0) {
+    const categoriesOrder = store.state.categories;
+    const catMap = {};
+    categoriesOrder.forEach(cat => {
+      catMap[cat.id] = { name: cat.name, items: [] };
+    });
+    const uncategorized = [];
+
+    list.items.forEach(item => {
+      if (item.categoryId && catMap[item.categoryId]) {
+        catMap[item.categoryId].items.push(item);
+      } else {
+        uncategorized.push(item);
+      }
     });
 
-    for (const [catName, items] of Object.entries(grouped)) {
-      text += `*${catName}:*\n`;
-      items.forEach(item => {
-        const check = item.bought ? '✅' : '◻️';
+    // Registered categories in stored custom order
+    categoriesOrder.forEach(cat => {
+      const catGroup = catMap[cat.id];
+      if (catGroup && catGroup.items.length > 0) {
+        catGroup.items.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt-BR', { sensitivity: 'base', numeric: true }));
+        text += `*${catGroup.name.toUpperCase()}:*\n`;
+        catGroup.items.forEach(item => {
+          const price = item.currentPrice > 0 ? ` (R$ ${item.currentPrice.toFixed(2)})` : '';
+          text += `• ${item.quantity} ${item.unit} - ${item.name}${price}\n`;
+        });
+        text += '\n';
+      }
+    });
+
+    // Uncategorized section at the very end
+    if (uncategorized.length > 0) {
+      uncategorized.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt-BR', { sensitivity: 'base', numeric: true }));
+      text += `*SEM CATEGORIA:*\n`;
+      uncategorized.forEach(item => {
         const price = item.currentPrice > 0 ? ` (R$ ${item.currentPrice.toFixed(2)})` : '';
-        text += `${check} ${item.quantity} ${item.unit} - ${item.name}${price}\n`;
+        text += `• ${item.quantity} ${item.unit} - ${item.name}${price}\n`;
       });
       text += '\n';
     }

@@ -9,23 +9,53 @@ window.renderCategoriesView = function () {
   const pantry = store.state.pantry || [];
   const activeList = store.getActiveList();
 
-  const categoriesListHtml = categories.map(cat => {
+  const categoriesListHtml = categories.map((cat, idx) => {
+    const isFirst = idx === 0;
+    const isLast = idx === categories.length - 1;
+    const totalItems = store.state.lists.reduce((acc, l) => acc + (l.items?.filter(i => i.categoryId === cat.id).length || 0), 0);
+
     return `
-      <div class="w-full flex items-center justify-between p-4 rounded-2xl transition-all border border-outline-variant/30 hover:opacity-95 shadow-sm" 
-           style="background-color: ${cat.bgColor}; border-color: ${cat.borderColor || 'transparent'}">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/70 backdrop-blur-sm shadow-sm" style="color: ${cat.textColor}">
-            <span class="material-symbols-outlined text-[24px]">${cat.icon}</span>
+      <div class="category-draggable w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border border-outline-variant/30 hover:opacity-95 shadow-sm" 
+           style="background-color: ${cat.bgColor}; border-color: ${cat.borderColor || 'transparent'}"
+           draggable="true"
+           data-cat-id="${cat.id}"
+           data-index="${idx}">
+        
+        <!-- Drag Handle & Category Info -->
+        <div class="flex items-center gap-2.5 flex-1 min-w-0">
+          <div class="category-drag-handle flex items-center justify-center p-1 text-on-surface-variant/60 hover:text-on-surface cursor-grab active:cursor-grabbing shrink-0" title="Arraste para reordenar">
+            <span class="material-symbols-outlined text-[20px]">drag_indicator</span>
           </div>
-          <div>
-            <h3 class="font-headline-md text-base font-bold text-on-surface">${cat.name}</h3>
-            <span class="text-xs text-on-surface-variant">${store.state.lists.reduce((acc, l) => acc + (l.items?.filter(i => i.categoryId === cat.id).length || 0), 0)} itens no total</span>
+
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white/75 backdrop-blur-sm shadow-sm shrink-0" style="color: ${cat.textColor}">
+            <span class="material-symbols-outlined text-[22px]">${cat.icon}</span>
+          </div>
+
+          <div class="flex-1 min-w-0 pr-1">
+            <h3 class="font-headline-md text-sm font-bold text-on-surface truncate">${cat.name}</h3>
+            <span class="text-[11px] text-on-surface-variant">${totalItems} ${totalItems === 1 ? 'item' : 'itens'} no total</span>
           </div>
         </div>
 
-        <div class="flex items-center gap-1">
-          <button onclick="window.openCategoryModal('${cat.id}')" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/5 text-on-surface-variant" title="Editar">
-            <span class="material-symbols-outlined text-[20px]">edit</span>
+        <!-- Action Controls: Up/Down reorder + Edit -->
+        <div class="flex items-center gap-1 shrink-0">
+          <div class="flex items-center bg-white/60 backdrop-blur-sm rounded-xl p-0.5 border border-black/5 mr-1">
+            <button onclick="window.shoppingStore.moveCategory('${cat.id}', -1)" 
+                    class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface disabled:opacity-20 disabled:pointer-events-none active:scale-90 transition-transform cursor-pointer" 
+                    ${isFirst ? 'disabled' : ''} 
+                    title="Mover para cima">
+              <span class="material-symbols-outlined text-[18px]">arrow_upward</span>
+            </button>
+            <button onclick="window.shoppingStore.moveCategory('${cat.id}', 1)" 
+                    class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface disabled:opacity-20 disabled:pointer-events-none active:scale-90 transition-transform cursor-pointer" 
+                    ${isLast ? 'disabled' : ''} 
+                    title="Mover para baixo">
+              <span class="material-symbols-outlined text-[18px]">arrow_downward</span>
+            </button>
+          </div>
+
+          <button onclick="window.openCategoryModal('${cat.id}')" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/5 text-on-surface-variant active:scale-90 transition-transform" title="Editar">
+            <span class="material-symbols-outlined text-[19px]">edit</span>
           </button>
         </div>
       </div>
@@ -71,6 +101,11 @@ window.renderCategoriesView = function () {
     </div>
   `;
 
+  // Attach category drag and drop listeners
+  setTimeout(() => {
+    window.attachCategoryDragListeners();
+  }, 50);
+
   return `
     <div class="pb-28">
       <!-- TopAppBar -->
@@ -87,17 +122,20 @@ window.renderCategoriesView = function () {
       <main class="px-5 py-2 space-y-6">
         <!-- Section: Categories -->
         <section>
-          <div class="flex justify-between items-center mb-3">
-            <h2 class="font-label-caps text-label-caps text-primary uppercase font-bold flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[16px]">category</span>
-              Categorias Cadastradas
-            </h2>
+          <div class="flex justify-between items-center mb-1.5">
+            <div>
+              <h2 class="font-label-caps text-label-caps text-primary uppercase font-bold flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px]">category</span>
+                Ordem das Categorias
+              </h2>
+              <p class="text-[11px] text-on-surface-variant">Arraste ou use as setas para definir a ordem no carrinho</p>
+            </div>
             <button onclick="window.openCategoryModal()" class="text-xs text-primary font-bold hover:underline flex items-center gap-0.5">
               <span class="material-symbols-outlined text-[14px]">add</span>
               Nova
             </button>
           </div>
-          <div class="space-y-3">
+          <div id="categories-list-container" class="space-y-2.5 pt-1">
             ${categoriesListHtml}
           </div>
         </section>
@@ -124,6 +162,96 @@ window.renderCategoriesView = function () {
       </main>
     </div>
   `;
+};
+
+// Drag and drop listener installer
+window.attachCategoryDragListeners = function () {
+  if (typeof document === 'undefined') return;
+  const container = document.getElementById('categories-list-container');
+  if (!container) return;
+
+  let draggedItem = null;
+  let draggedIndex = null;
+
+  const items = container.querySelectorAll('.category-draggable');
+  items.forEach(item => {
+    // Desktop Drag and Drop
+    item.addEventListener('dragstart', (e) => {
+      draggedItem = item;
+      draggedIndex = parseInt(item.dataset.index, 10);
+      item.classList.add('dragging');
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', item.dataset.catId);
+      }
+    });
+
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      items.forEach(i => i.classList.remove('drop-target-above', 'drop-target-below'));
+    });
+
+    item.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      const targetIndex = parseInt(item.dataset.index, 10);
+      if (targetIndex !== draggedIndex) {
+        const rect = item.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        items.forEach(i => i.classList.remove('drop-target-above', 'drop-target-below'));
+        if (e.clientY < midY) {
+          item.classList.add('drop-target-above');
+        } else {
+          item.classList.add('drop-target-below');
+        }
+      }
+    });
+
+    item.addEventListener('dragleave', () => {
+      item.classList.remove('drop-target-above', 'drop-target-below');
+    });
+
+    item.addEventListener('drop', (e) => {
+      e.preventDefault();
+      item.classList.remove('drop-target-above', 'drop-target-below');
+      const targetIndex = parseInt(item.dataset.index, 10);
+      if (draggedIndex !== null && targetIndex !== draggedIndex) {
+        window.shoppingStore.reorderCategories(draggedIndex, targetIndex);
+      }
+    });
+
+    // Touch Drag Reorder Support for Mobile
+    const handle = item.querySelector('.category-drag-handle');
+    if (handle) {
+      let isTouching = false;
+
+      handle.addEventListener('touchstart', () => {
+        isTouching = true;
+        item.classList.add('dragging');
+      }, { passive: true });
+
+      handle.addEventListener('touchmove', (e) => {
+        if (!isTouching) return;
+        const touchCurrentY = e.touches[0].clientY;
+        const targetElement = document.elementFromPoint(e.touches[0].clientX, touchCurrentY);
+        const targetCard = targetElement ? targetElement.closest('.category-draggable') : null;
+
+        if (targetCard && targetCard !== item) {
+          const fromIdx = parseInt(item.dataset.index, 10);
+          const toIdx = parseInt(targetCard.dataset.index, 10);
+          if (!isNaN(fromIdx) && !isNaN(toIdx) && fromIdx !== toIdx) {
+            window.shoppingStore.reorderCategories(fromIdx, toIdx);
+            isTouching = false;
+          }
+        }
+      }, { passive: true });
+
+      handle.addEventListener('touchend', () => {
+        isTouching = false;
+        item.classList.remove('dragging');
+      });
+    }
+  });
 };
 
 window.addPantryItemToList = function (listId, pantryId) {
@@ -173,6 +301,7 @@ window.openNewPantryModal = function () {
           <div>
             <label class="block font-label-caps text-on-surface-variant uppercase text-xs mb-1.5 font-bold">Categoria</label>
             <select id="pantry-cat-input" class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/50 focus:border-primary focus:outline-none text-on-surface text-sm font-semibold">
+              <option value="">Sem categoria</option>
               ${categories.map(c => `
                 <option value="${c.id}">${c.name}</option>
               `).join('')}

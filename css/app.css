@@ -247,4 +247,106 @@ input, textarea {
   transition: none !important;
 }
 
+/* Category Drag and Drop Reordering */
+.category-draggable {
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-y;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, opacity 0.2s ease;
+}
 
+.category-draggable.dragging {
+  opacity: 0.55;
+  transform: scale(0.98);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  cursor: grabbing;
+}
+
+.category-draggable.drop-target-above {
+  border-top: 3px solid var(--color-primary) !important;
+}
+
+.category-draggable.drop-target-below {
+  border-bottom: 3px solid var(--color-primary) !important;
+}
+
+/* Missing Price Warning in Cart */
+.cart-missing-price-card {
+  border-color: #ffb4a9 !important;
+  background-color: #fff4f1 !important;
+}
+
+.cart-missing-price-badge {
+  background-color: #ffdad6;
+  color: #ba1a1a;
+  border: 1px solid #ffb4a9;
+  animation: pulseBadge 2s infinite ease-in-out;
+}
+
+@keyframes pulseBadge {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.82;
+    transform: scale(0.97);
+  }
+}
+
+/* Floating Numeric Keypad */
+.keypad-btn {
+  height: 54px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  border: 1px solid rgba(220, 193, 177, 0.45);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+  transition: all 0.12s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.keypad-btn:active {
+  transform: scale(0.92);
+  background-color: var(--color-surface-variant);
+  box-shadow: none;
+}
+
+.keypad-btn-action {
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  font-size: 16px;
+}
+
+.keypad-btn-action:active {
+  background-color: var(--color-surface-container-high);
+}
+
+.keypad-btn-submit {
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  box-shadow: 0 4px 12px rgba(230, 126, 34, 0.25);
+}
+
+.keypad-btn-submit:active {
+  background-color: #d35400;
+  color: #ffffff;
+}
+
+/* Category Radio Item Selection Card */
+.category-radio-label {
+  transition: all 0.2s ease;
+}
+
+.category-radio-label:has(input:checked) {
+  border-color: var(--color-primary) !important;
+  background-color: var(--color-primary-fixed) !important;
+  font-weight: 700;
+}

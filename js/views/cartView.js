@@ -56,7 +56,7 @@ window.renderCartView = function () {
     return !searchQuery || item.name.toLowerCase().includes(searchQuery);
   });
 
-  // Group filtered items by category
+  // Group filtered items by category in the user's custom category order
   const categoriesMap = {};
   store.state.categories.forEach(cat => {
     categoriesMap[cat.id] = {
@@ -65,26 +65,141 @@ window.renderCartView = function () {
     };
   });
 
+  const uncategorizedItems = [];
+
   filteredItems.forEach(item => {
-    if (!categoriesMap[item.categoryId]) {
-      categoriesMap[item.categoryId] = {
-        id: item.categoryId,
-        name: 'Outros',
-        icon: 'category',
-        bgColor: '#feeadf',
-        textColor: '#944a00',
-        borderColor: '#f2dfd4',
-        items: []
-      };
+    if (item.categoryId && categoriesMap[item.categoryId]) {
+      categoriesMap[item.categoryId].items.push(item);
+    } else {
+      uncategorizedItems.push(item);
     }
-    categoriesMap[item.categoryId].items.push(item);
   });
+
+  // Helper to render a list of items (sorted alphabetically)
+  const renderItemsList = (itemsArray, categoryBgColor, categoryBorderColor, categoryTextColor) => {
+    // Sort items alphabetically by name (accent- and case-insensitive)
+    const sortedItems = [...itemsArray].sort((a, b) => {
+      const nameA = (a.name || '').trim();
+      const nameB = (b.name || '').trim();
+      return nameA.localeCompare(nameB, 'pt-BR', { sensitivity: 'base', numeric: true });
+    });
+
+    return sortedItems.map(item => {
+      const curPrice = Number(item.currentPrice) || 0;
+      const prevPrice = Number(item.previousPrice) || curPrice;
+      const qty = Number(item.quantity) || 1;
+      const subtotal = qty * curPrice;
+      const isMissingPrice = curPrice <= 0;
+
+      // Price comparison badge
+      let priceDiffHtml = '';
+      if (showPreviousPrices && prevPrice > 0 && curPrice > 0) {
+        const diff = curPrice - prevPrice;
+        if (diff > 0) {
+          priceDiffHtml = `
+            <div class="text-[10px] font-bold text-error flex items-center justify-end gap-0.5 mt-0.5">
+              <span class="material-symbols-outlined text-[12px]">arrow_upward</span>
+              +${(diff * qty).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} (+${Math.round((diff / prevPrice) * 100)}%)
+            </div>
+          `;
+        } else if (diff < 0) {
+          priceDiffHtml = `
+            <div class="text-[10px] font-bold text-secondary flex items-center justify-end gap-0.5 mt-0.5">
+              <span class="material-symbols-outlined text-[12px]">arrow_downward</span>
+              -${(Math.abs(diff) * qty).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} (${Math.round((diff / prevPrice) * 100)}%)
+            </div>
+          `;
+        }
+      }
+
+      // Stronger border line matching the category color when price is missing
+      const cardBorder = isMissingPrice
+        ? `2px solid ${categoryTextColor || '#e67e22'}`
+        : `1px solid ${categoryBorderColor || 'transparent'}`;
+
+      return `
+        <div class="rounded-2xl p-3.5 flex justify-between items-center transition-all shadow-sm" 
+             style="background-color: ${categoryBgColor}; border: ${cardBorder}">
+          
+          <!-- Left Column: Name & Quantity Stepper -->
+          <div class="flex flex-col gap-1.5 flex-1 min-w-0 pr-2">
+            <h3 onclick="window.openItemModal('${list.id}', '${item.id}')" 
+                class="font-body-lg text-sm font-bold text-on-surface truncate cursor-pointer hover:underline" 
+                title="${item.name}">
+              ${item.name}
+            </h3>
+
+            <!-- Quantity Stepper -->
+            <div class="flex items-center bg-white/80 backdrop-blur-sm rounded-full w-fit px-1 py-0.5 shadow-sm border border-black/5">
+              <button onclick="window.shoppingStore.updateItemQuantity('${list.id}', '${item.id}', -1)" 
+                      class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-90 transition-transform cursor-pointer"
+                      title="Diminuir">
+                <span class="material-symbols-outlined text-sm">remove</span>
+              </button>
+              <span class="px-2 text-center font-body-lg text-xs font-bold text-on-surface min-w-[28px]">
+                ${item.quantity} <span class="text-[10px] font-normal text-on-surface-variant">${item.unit}</span>
+              </span>
+              <button onclick="window.shoppingStore.updateItemQuantity('${list.id}', '${item.id}', 1)" 
+                      class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-90 transition-transform cursor-pointer"
+                      title="Aumentar">
+                <span class="material-symbols-outlined text-sm">add</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Column: Price Display, Numeric Keypad Trigger, More Menu -->
+          <div class="flex flex-col items-end gap-1 ml-2 shrink-0">
+            <button type="button" onclick="window.openItemModal('${list.id}', '${item.id}')" class="text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-full hover:bg-black/5 cursor-pointer" title="Opções">
+              <span class="material-symbols-outlined text-[18px]">more_vert</span>
+            </button>
+
+            ${isMissingPrice ? `
+              <!-- Evident Missing Price Alert Badge -->
+              <button type="button" onclick="window.openNumericKeypad('${list.id}', '${item.id}')" 
+                      class="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer border"
+                      style="background-color: white; color: ${categoryTextColor || '#ba1a1a'}; border-color: ${categoryTextColor || '#ba1a1a'};"
+                      title="Item sem preço! Toque para inserir o valor">
+                <span class="material-symbols-outlined text-[16px] font-bold">dialpad</span>
+                <span>Inserir valor</span>
+              </button>
+            ` : showPreviousPrices ? `
+              <button type="button" onclick="window.openNumericKeypad('${list.id}', '${item.id}')" class="text-right cursor-pointer group bg-transparent border-0 p-0 active:scale-95 transition-transform" title="Toque para alterar o valor">
+                <div class="flex items-baseline justify-end gap-1.5">
+                  ${prevPrice > 0 ? `
+                    <span class="text-xs font-normal text-on-surface-variant/60 line-through tracking-tight">
+                      ${prevPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </span>
+                  ` : ''}
+                  <span class="font-price-display text-sm font-bold text-on-surface group-hover:text-primary transition-colors flex items-center justify-end gap-0.5">
+                    ${curPrice > 0 ? `${curPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}<span class="text-xs font-normal text-on-surface-variant">/${item.unit}</span>` : 'R$ --,--'}
+                  </span>
+                </div>
+                <div class="text-[11px] text-on-surface-variant font-medium mt-0.5">
+                  Total: <strong class="text-on-surface font-semibold">${subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+                </div>
+                ${priceDiffHtml}
+              </button>
+            ` : `
+              <button type="button" onclick="window.openNumericKeypad('${list.id}', '${item.id}')" class="text-right cursor-pointer group bg-transparent border-0 p-0 active:scale-95 transition-transform" title="Toque para alterar o valor">
+                <div class="font-price-display text-sm font-bold text-on-surface group-hover:text-primary transition-colors flex items-center justify-end gap-0.5">
+                  ${curPrice > 0 ? `${curPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}<span class="text-xs font-normal text-on-surface-variant">/${item.unit}</span>` : 'R$ --,--'}
+                </div>
+                <div class="text-[11px] text-on-surface-variant font-medium mt-0.5">
+                  ${curPrice > 0 ? `Total: <strong class="text-on-surface font-semibold">${subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>` : '<span class="text-primary font-bold hover:underline flex items-center gap-0.5 justify-end"><span class="material-symbols-outlined text-[13px]">dialpad</span>Toque p/ valor</span>'}
+                </div>
+              </button>
+            `}
+          </div>
+        </div>
+      `;
+    }).join('');
+  };
 
   // Render categories HTML
   let categoriesHtml = '';
   const activeCategories = Object.values(categoriesMap).filter(cat => cat.items.length > 0);
 
-  if (activeCategories.length === 0) {
+  if (activeCategories.length === 0 && uncategorizedItems.length === 0) {
     categoriesHtml = `
       <div class="py-12 text-center bg-surface-container/50 rounded-2xl border border-dashed border-outline-variant p-6">
         <span class="material-symbols-outlined text-4xl text-outline mb-2">search_off</span>
@@ -99,98 +214,9 @@ window.renderCartView = function () {
       </div>
     `;
   } else {
-    categoriesHtml = activeCategories.map(category => {
-      const itemsHtml = category.items.map(item => {
-        const curPrice = Number(item.currentPrice) || 0;
-        const prevPrice = Number(item.previousPrice) || curPrice;
-        const qty = Number(item.quantity) || 1;
-        const subtotal = qty * curPrice;
-
-        // Price comparison badge
-        let priceDiffHtml = '';
-        if (showPreviousPrices && prevPrice > 0) {
-          const diff = curPrice - prevPrice;
-          if (diff > 0) {
-            priceDiffHtml = `
-              <div class="text-[10px] font-bold text-error flex items-center justify-end gap-0.5 mt-0.5">
-                <span class="material-symbols-outlined text-[12px]">arrow_upward</span>
-                +${(diff * qty).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} (+${Math.round((diff/prevPrice)*100)}%)
-              </div>
-            `;
-          } else if (diff < 0) {
-            priceDiffHtml = `
-              <div class="text-[10px] font-bold text-secondary flex items-center justify-end gap-0.5 mt-0.5">
-                <span class="material-symbols-outlined text-[12px]">arrow_downward</span>
-                -${(Math.abs(diff) * qty).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} (${Math.round((diff/prevPrice)*100)}%)
-              </div>
-            `;
-          }
-        }
-
-        return `
-          <div class="rounded-2xl p-3.5 flex justify-between items-center transition-all border shadow-sm" 
-               style="background-color: ${category.bgColor}; border-color: ${category.borderColor || 'transparent'}">
-            <!-- Left Column: Name & Stepper -->
-            <div class="flex flex-col gap-2 flex-1 min-w-0 pr-2">
-              <h3 onclick="window.openItemModal('${list.id}', '${item.id}')" 
-                  class="font-body-lg text-sm font-bold text-on-surface truncate cursor-pointer hover:underline" 
-                  title="${item.name}">
-                ${item.name}
-              </h3>
-
-              <!-- Quantity Stepper -->
-              <div class="flex items-center bg-white/70 backdrop-blur-sm rounded-full w-fit px-1 py-0.5 shadow-sm border border-black/5">
-                <button onclick="window.shoppingStore.updateItemQuantity('${list.id}', '${item.id}', -1)" 
-                        class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-90 transition-transform cursor-pointer">
-                  <span class="material-symbols-outlined text-sm">remove</span>
-                </button>
-                <span class="px-2 text-center font-body-lg text-xs font-bold text-on-surface min-w-[28px]">
-                  ${item.quantity} <span class="text-[10px] font-normal text-on-surface-variant">${item.unit}</span>
-                </span>
-                <button onclick="window.shoppingStore.updateItemQuantity('${list.id}', '${item.id}', 1)" 
-                        class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-90 transition-transform cursor-pointer">
-                  <span class="material-symbols-outlined text-sm">add</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Right Column: Price Display, More Menu -->
-            <div class="flex flex-col items-end gap-1 ml-2">
-              <button onclick="window.openItemModal('${list.id}', '${item.id}')" class="text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-full hover:bg-black/5" title="Opções">
-                <span class="material-symbols-outlined text-[18px]">more_vert</span>
-              </button>
-
-              ${showPreviousPrices ? `
-                <div class="text-right">
-                  <div class="flex items-baseline justify-end gap-1.5">
-                    ${prevPrice > 0 ? `
-                      <span class="text-xs font-normal text-on-surface-variant/60 line-through tracking-tight">
-                        ${prevPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                      </span>
-                    ` : ''}
-                    <span class="font-price-display text-sm font-bold text-on-surface">
-                      ${curPrice > 0 ? `${curPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}<span class="text-xs font-normal text-on-surface-variant">/${item.unit}</span>` : 'R$ --,--'}
-                    </span>
-                  </div>
-                  <div class="text-[11px] text-on-surface-variant font-medium mt-0.5">
-                    Total: <strong class="text-on-surface font-semibold">${subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
-                  </div>
-                  ${priceDiffHtml}
-                </div>
-              ` : `
-                <div class="text-right">
-                  <div class="font-price-display text-sm font-bold text-on-surface">
-                    ${curPrice > 0 ? `${curPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}<span class="text-xs font-normal text-on-surface-variant">/${item.unit}</span>` : 'R$ --,--'}
-                  </div>
-                  <div class="text-[11px] text-on-surface-variant font-medium mt-0.5">
-                    ${curPrice > 0 ? `Total: <strong class="text-on-surface font-semibold">${subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>` : 'Toque para editar'}
-                  </div>
-                </div>
-              `}
-            </div>
-          </div>
-        `;
-      }).join('');
+    // 1. Registered Categories in User Order
+    const userCategoriesHtml = activeCategories.map(category => {
+      const itemsHtml = renderItemsList(category.items, category.bgColor, category.borderColor, category.textColor);
 
       return `
         <section class="space-y-2.5">
@@ -207,6 +233,35 @@ window.renderCartView = function () {
         </section>
       `;
     }).join('');
+
+    // 2. Sem Categoria Section (Fixed at the bottom of the list)
+    let uncategorizedSectionHtml = '';
+    if (uncategorizedItems.length > 0) {
+      const uncategorizedCategory = store.getCategoryById(null);
+      const uncategorizedItemsHtml = renderItemsList(
+        uncategorizedItems, 
+        uncategorizedCategory.bgColor, 
+        uncategorizedCategory.borderColor, 
+        uncategorizedCategory.textColor
+      );
+
+      uncategorizedSectionHtml = `
+        <section class="space-y-2.5 pt-1">
+          <div class="flex items-center justify-between px-1">
+            <div class="flex items-center gap-2" style="color: ${uncategorizedCategory.textColor}">
+              <span class="material-symbols-outlined text-base">${uncategorizedCategory.icon}</span>
+              <h2 class="font-label-caps text-xs font-bold uppercase tracking-wider">${uncategorizedCategory.name}</h2>
+            </div>
+            <span class="text-xs text-on-surface-variant font-medium">${uncategorizedItems.length} ${uncategorizedItems.length === 1 ? 'item' : 'itens'}</span>
+          </div>
+          <div class="space-y-2">
+            ${uncategorizedItemsHtml}
+          </div>
+        </section>
+      `;
+    }
+
+    categoriesHtml = userCategoriesHtml + uncategorizedSectionHtml;
   }
 
   return `
@@ -214,7 +269,7 @@ window.renderCartView = function () {
       <!-- TopAppBar -->
       <header class="bg-background flex justify-between items-center w-full px-5 py-3.5 sticky top-0 z-30">
         <div class="flex items-center gap-2.5">
-          <button onclick="window.shoppingStore.setActiveTab('home')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-95 transition-all">
+          <button onclick="window.shoppingStore.setActiveTab('home')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-95 transition-all" title="Voltar ao início">
             <span class="material-symbols-outlined text-[22px]">arrow_back</span>
           </button>
           <div>
