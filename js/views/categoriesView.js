@@ -109,7 +109,7 @@ window.renderCategoriesView = function () {
   return `
     <div class="pb-28">
       <!-- TopAppBar -->
-      <header class="bg-background flex justify-between items-center w-full px-5 py-3.5 sticky top-0 z-30">
+      <header class="bg-background/80 backdrop-blur-md flex justify-between items-center w-full px-5 py-3.5 sticky top-0 z-30">
         <div class="flex items-center gap-2.5">
           <button onclick="window.shoppingStore.setActiveTab('home')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-95 transition-all" title="Voltar">
             <span class="material-symbols-outlined text-[22px]">arrow_back</span>
@@ -281,9 +281,9 @@ window.openNewPantryModal = function () {
   const categories = store.state.categories;
 
   const modalHtml = `
-    <div id="modal-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
-      <div class="w-full max-w-[540px] bg-surface-container-lowest rounded-t-3xl p-6 pointer-events-auto shadow-[0px_-10px_40px_rgba(0,0,0,0.15)] relative z-10 slide-up max-h-[90vh] overflow-y-auto">
-        <div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-5"></div>
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/50 dark:bg-black/65 backdrop-blur-md z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
+      <div class="w-full max-w-[540px] floating-modal-sheet rounded-t-3xl p-6 pointer-events-auto relative z-10 slide-up max-h-[90vh] overflow-y-auto">
+        <div class="w-12 h-1.5 bg-outline-variant/60 rounded-full mx-auto mb-5"></div>
         
         <div class="flex justify-between items-center mb-5">
           <h2 class="font-headline-md text-headline-md text-on-surface">Novo Item na Despensa</h2>

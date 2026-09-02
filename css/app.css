@@ -121,11 +121,11 @@ html.dark {
   --color-outline: #9f8c7e;
   --color-outline-variant: #534237;
 
-  --glass-bg: rgba(36, 27, 21, 0.85);
-  --glass-border: rgba(83, 66, 55, 0.65);
-  --glass-total-bar: rgba(31, 23, 18, 0.88);
-  --modal-backdrop: rgba(0, 0, 0, 0.68);
-  --shadow-color: rgba(0, 0, 0, 0.35);
+  --glass-bg: rgba(31, 23, 18, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-total-bar: rgba(24, 18, 13, 0.72);
+  --modal-backdrop: rgba(0, 0, 0, 0.65);
+  --shadow-color: rgba(0, 0, 0, 0.45);
 }
 
 /* ==========================================================================
@@ -186,11 +186,11 @@ html.dark {
     --color-outline: #9f8c7e;
     --color-outline-variant: #534237;
 
-    --glass-bg: rgba(36, 27, 21, 0.85);
-    --glass-border: rgba(83, 66, 55, 0.65);
-    --glass-total-bar: rgba(31, 23, 18, 0.88);
-    --modal-backdrop: rgba(0, 0, 0, 0.68);
-    --shadow-color: rgba(0, 0, 0, 0.35);
+    --glass-bg: rgba(31, 23, 18, 0.72);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-total-bar: rgba(24, 18, 13, 0.72);
+    --modal-backdrop: rgba(0, 0, 0, 0.65);
+    --shadow-color: rgba(0, 0, 0, 0.45);
   }
 }
 
@@ -476,23 +476,75 @@ input, textarea {
   border-bottom: 3px solid var(--color-primary) !important;
 }
 
-/* Category Item Card Theme Adaptation */
+/* Category Item Card Theme Adaptation - Always preserves vibrant category color */
 .category-item-card {
-  background-color: var(--cat-bg, var(--color-surface-container));
+  background-color: var(--cat-bg, var(--color-surface-container)) !important;
   border-color: var(--cat-border, transparent);
+  color: #231a13;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 html.dark .category-item-card {
-  background-color: var(--color-surface-container) !important;
+  background-color: var(--cat-bg, var(--color-surface-container)) !important;
   border-color: var(--cat-border, var(--color-outline-variant)) !important;
+  color: #231a13;
 }
 
 @media (prefers-color-scheme: dark) {
   html:not(.light) .category-item-card {
-    background-color: var(--color-surface-container) !important;
+    background-color: var(--cat-bg, var(--color-surface-container)) !important;
     border-color: var(--cat-border, var(--color-outline-variant)) !important;
+    color: #231a13;
   }
+}
+
+/* Elevated Quantity Stepper Pill with High Contrast & Blur */
+.qty-stepper {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.08), 0 0.5px 1px rgba(0, 0, 0, 0.04) !important;
+  color: #231a13 !important;
+}
+
+.qty-stepper button {
+  color: #564337 !important;
+  transition: all 0.15s ease;
+}
+
+.qty-stepper button:hover,
+.qty-stepper button:active {
+  color: #18120d !important;
+}
+
+.qty-stepper span {
+  color: #231a13 !important;
+}
+
+/* Floating Modals & Sheets with Enhanced Glassmorphic Depth */
+.floating-modal-sheet {
+  background-color: var(--color-surface-container-lowest);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 -16px 48px -4px rgba(0, 0, 0, 0.22), 0 -4px 16px rgba(0, 0, 0, 0.08);
+}
+
+html.dark .floating-modal-sheet {
+  background-color: #241b15;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 -20px 56px -4px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.floating-modal-dialog {
+  background-color: var(--color-surface-container-lowest);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 20px 48px -6px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+html.dark .floating-modal-dialog {
+  background-color: #241b15;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 56px -6px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 /* Missing Price Warning in Cart */

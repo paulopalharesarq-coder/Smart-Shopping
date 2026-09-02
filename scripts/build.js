@@ -36,12 +36,9 @@ const versionData = {
   buildTime: now.toISOString(),
   commit: commitSha || 'local-build'
 };
-// 3. Ensure all icons are up to date
-try {
-  require('./generate_icons.js');
-} catch (err) {
-  console.warn('[BUILD] Icon generator warning:', err);
-}
+fs.writeFileSync(versionPath, JSON.stringify(versionData, null, 2), 'utf8');
+console.log(`[BUILD] Generated version.json with version '${buildVersion}'`);
 
-console.log(`[BUILD] Build finished successfully!`);
+console.log(`[BUILD] Build finished successfully! Preserved all custom icon assets.`);
+
 

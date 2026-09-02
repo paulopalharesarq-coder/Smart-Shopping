@@ -56,9 +56,9 @@ window.openNewListModal = function () {
   const defaultTitle = `Compras • ${capitalizedMonth}`;
 
   const modalHtml = `
-    <div id="modal-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
-      <div class="w-full max-w-[540px] bg-surface-container-lowest rounded-t-3xl p-6 pointer-events-auto shadow-[0px_-10px_40px_rgba(0,0,0,0.15)] relative z-10 slide-up max-h-[90vh] overflow-y-auto">
-        <div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-6"></div>
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/50 dark:bg-black/65 backdrop-blur-md z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
+      <div class="w-full max-w-[540px] floating-modal-sheet rounded-t-3xl p-6 pointer-events-auto relative z-10 slide-up max-h-[90vh] overflow-y-auto">
+        <div class="w-12 h-1.5 bg-outline-variant/60 rounded-full mx-auto mb-6"></div>
         
         <div class="flex justify-between items-center mb-6">
           <h2 class="font-headline-md text-headline-md text-on-surface">Criar Nova Lista</h2>
@@ -189,9 +189,9 @@ window.openNumericKeypad = function (listId, itemId = null, targetInputId = null
   const formattedDisplay = (keypadState.cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const modalHtml = `
-    <div id="keypad-modal-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeKeypad()">
-      <div class="w-full max-w-[540px] bg-surface-container-lowest rounded-t-3xl p-5 pointer-events-auto shadow-[0px_-10px_40px_rgba(0,0,0,0.3)] relative z-[1000] slide-up pb-[max(1.5rem,calc(0.75rem+env(safe-area-inset-bottom,0px)))] border-t border-primary-fixed-dim/40">
-        <div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-4"></div>
+    <div id="keypad-modal-backdrop" class="fixed inset-0 bg-black/65 dark:bg-black/75 backdrop-blur-md z-[999] flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeKeypad()">
+      <div class="w-full max-w-[540px] floating-modal-sheet rounded-t-3xl p-5 pointer-events-auto relative z-[1000] slide-up pb-[max(1.5rem,calc(0.75rem+env(safe-area-inset-bottom,0px)))] border-t border-primary-fixed-dim/40">
+        <div class="w-12 h-1.5 bg-outline-variant/60 rounded-full mx-auto mb-4"></div>
         
         <!-- Header -->
         <div class="flex justify-between items-center mb-3">
@@ -366,9 +366,9 @@ window.openItemModal = function (listId, itemId = null) {
   const currentCategoryId = item ? (item.categoryId || null) : null;
 
   const modalHtml = `
-    <div id="modal-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
-      <div class="w-full max-w-[540px] bg-surface-container-lowest rounded-t-3xl p-6 pointer-events-auto shadow-[0px_-10px_40px_rgba(0,0,0,0.15)] relative z-[101] slide-up max-h-[90vh] overflow-y-auto">
-        <div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-5"></div>
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/50 dark:bg-black/65 backdrop-blur-md z-[100] flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
+      <div class="w-full max-w-[540px] floating-modal-sheet rounded-t-3xl p-6 pointer-events-auto relative z-[101] slide-up max-h-[90vh] overflow-y-auto">
+        <div class="w-12 h-1.5 bg-outline-variant/60 rounded-full mx-auto mb-5"></div>
         
         <div class="flex justify-between items-center mb-5">
           <h2 class="font-headline-md text-headline-md text-on-surface">${isEdit ? 'Editar Item' : 'Adicionar ao Carrinho'}</h2>
@@ -622,9 +622,9 @@ window.openCheckoutSummaryModal = function (listId) {
   }
 
   const modalHtml = `
-    <div id="modal-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
-      <div class="w-full max-w-[540px] bg-surface-container-lowest rounded-t-3xl p-6 pointer-events-auto shadow-[0px_-10px_40px_rgba(0,0,0,0.15)] relative z-10 slide-up max-h-[90vh] overflow-y-auto">
-        <div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-5"></div>
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/50 dark:bg-black/65 backdrop-blur-md z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
+      <div class="w-full max-w-[540px] floating-modal-sheet rounded-t-3xl p-6 pointer-events-auto relative z-10 slide-up max-h-[90vh] overflow-y-auto">
+        <div class="w-12 h-1.5 bg-outline-variant/60 rounded-full mx-auto mb-5"></div>
         
         <div class="flex justify-between items-center mb-5">
           <div>
@@ -771,20 +771,20 @@ window.openCategoryModal = function (catId = null) {
 
   const ICONS = ['shopping_cart', 'eco', 'set_meal', 'water_drop', 'bakery_dining', 'local_bar', 'cleaning_services', 'spa', 'fastfood', 'kitchen', 'icecream', 'pets', 'local_pharmacy'];
   const COLORS = [
-    { bg: '#feeadf', text: '#944a00' },
-    { bg: '#e8f5e9', text: '#006d37' },
-    { bg: '#ffdad6', text: '#b4271d' },
-    { bg: '#e3f2fd', text: '#1976d2' },
-    { bg: '#fff3e0', text: '#e65100' },
-    { bg: '#f3e5f5', text: '#7b1fa2' },
-    { bg: '#e0f7fa', text: '#00838f' },
-    { bg: '#fce4ec', text: '#c2185b' }
+    { bg: '#feeadf', text: '#944a00' }, // Bege
+    { bg: '#dcfce7', text: '#15803d' }, // Verde Folha
+    { bg: '#fee2e2', text: '#b91c1c' }, // Vermelho
+    { bg: '#e0f2fe', text: '#0369a1' }, // Azul Céu
+    { bg: '#fef08a', text: '#854d0e' }, // Amarelo Solar (diferente de bege)
+    { bg: '#f3e8ff', text: '#7e22ce' }, // Lilás / Roxo
+    { bg: '#ccfbf1', text: '#0f766e' }, // Verde Petróleo / Teal (diferente de verde folha)
+    { bg: '#fce7f3', text: '#be185d' }  // Rosa Pink (diferente de vermelho)
   ];
 
   const modalHtml = `
-    <div id="modal-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
-      <div class="w-full max-w-[540px] bg-surface-container-lowest rounded-t-3xl p-6 pointer-events-auto shadow-[0px_-10px_40px_rgba(0,0,0,0.15)] relative z-10 slide-up max-h-[90vh] overflow-y-auto">
-        <div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-5"></div>
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/50 dark:bg-black/65 backdrop-blur-md z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
+      <div class="w-full max-w-[540px] floating-modal-sheet rounded-t-3xl p-6 pointer-events-auto relative z-10 slide-up max-h-[90vh] overflow-y-auto">
+        <div class="w-12 h-1.5 bg-outline-variant/60 rounded-full mx-auto mb-5"></div>
         
         <div class="flex justify-between items-center mb-5">
           <h2 class="font-headline-md text-headline-md text-on-surface">${isEdit ? 'Editar Categoria' : 'Nova Categoria'}</h2>
@@ -898,9 +898,9 @@ window.openMobileConnectModal = async function () {
   const qrSvg = window.generateQRCodeSVG ? window.generateQRCodeSVG(hostUrl, 210, '#944a00', '#ffffff') : '';
 
   const modalHtml = `
-    <div id="modal-backdrop" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
-      <div class="w-full max-w-[540px] bg-surface-container-lowest rounded-t-3xl p-6 pointer-events-auto shadow-[0px_-10px_40px_rgba(0,0,0,0.2)] relative z-10 slide-up max-h-[92vh] overflow-y-auto">
-        <div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-5"></div>
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/50 dark:bg-black/65 backdrop-blur-md z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
+      <div class="w-full max-w-[540px] floating-modal-sheet rounded-t-3xl p-6 pointer-events-auto relative z-10 slide-up max-h-[92vh] overflow-y-auto">
+        <div class="w-12 h-1.5 bg-outline-variant/60 rounded-full mx-auto mb-5"></div>
         
         <div class="flex justify-between items-center mb-4">
           <div class="flex items-center gap-2.5">
@@ -1034,9 +1034,9 @@ window.openListActionsMenu = function (listId, e) {
   if (!list) return;
 
   const modalHtml = `
-    <div id="modal-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
-      <div class="w-full max-w-[540px] bg-surface-container-lowest rounded-t-3xl p-5 pointer-events-auto shadow-[0px_-10px_40px_rgba(0,0,0,0.15)] relative z-10 slide-up">
-        <div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-4"></div>
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/50 dark:bg-black/65 backdrop-blur-md z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
+      <div class="w-full max-w-[540px] floating-modal-sheet rounded-t-3xl p-5 pointer-events-auto relative z-10 slide-up">
+        <div class="w-12 h-1.5 bg-outline-variant/60 rounded-full mx-auto mb-4"></div>
         
         <div class="px-2 mb-4">
           <span class="text-[11px] font-bold uppercase tracking-wider text-outline">Opções da Lista</span>
@@ -1105,9 +1105,9 @@ window.openRenameListModal = function (listId) {
   if (!list) return;
 
   const modalHtml = `
-    <div id="modal-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
-      <div class="w-full max-w-[540px] bg-surface-container-lowest rounded-t-3xl p-6 pointer-events-auto shadow-[0px_-10px_40px_rgba(0,0,0,0.15)] relative z-10 slide-up max-h-[90vh] overflow-y-auto">
-        <div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-5"></div>
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/50 dark:bg-black/65 backdrop-blur-md z-50 flex items-end justify-center transition-opacity fade-in" onclick="if(event.target === this) window.closeModal()">
+      <div class="w-full max-w-[540px] floating-modal-sheet rounded-t-3xl p-6 pointer-events-auto relative z-10 slide-up max-h-[90vh] overflow-y-auto">
+        <div class="w-12 h-1.5 bg-outline-variant/60 rounded-full mx-auto mb-5"></div>
         
         <div class="flex justify-between items-center mb-5">
           <div class="flex items-center gap-2.5">

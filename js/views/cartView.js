@@ -131,18 +131,18 @@ window.renderCartView = function () {
               ${item.name}
             </h3>
 
-            <!-- Quantity Stepper -->
-            <div class="flex items-center bg-surface-container-lowest/80 backdrop-blur-sm rounded-full w-fit px-1 py-0.5 shadow-sm border border-outline-variant/30">
-              <button onclick="window.shoppingStore.updateItemQuantity('${list.id}', '${item.id}', -1)" 
-                      class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-90 transition-transform cursor-pointer"
+            <!-- Quantity Stepper with High-Contrast Off-White Pill -->
+            <div class="qty-stepper flex items-center rounded-full w-fit px-1 py-0.5 shadow-sm">
+              <button type="button" onclick="window.shoppingStore.updateItemQuantity('${list.id}', '${item.id}', -1)" 
+                      class="w-7 h-7 flex items-center justify-center active:scale-90 transition-transform cursor-pointer"
                       title="Diminuir">
                 <span class="material-symbols-outlined text-sm">remove</span>
               </button>
-              <span class="px-2 text-center font-body-lg text-xs font-bold text-on-surface min-w-[28px]">
-                ${item.quantity} <span class="text-[10px] font-normal text-on-surface-variant">${item.unit}</span>
+              <span class="px-2 text-center font-body-lg text-xs font-bold min-w-[28px]">
+                ${item.quantity} <span class="text-[10px] font-normal opacity-80">${item.unit}</span>
               </span>
-              <button onclick="window.shoppingStore.updateItemQuantity('${list.id}', '${item.id}', 1)" 
-                      class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-90 transition-transform cursor-pointer"
+              <button type="button" onclick="window.shoppingStore.updateItemQuantity('${list.id}', '${item.id}', 1)" 
+                      class="w-7 h-7 flex items-center justify-center active:scale-90 transition-transform cursor-pointer"
                       title="Aumentar">
                 <span class="material-symbols-outlined text-sm">add</span>
               </button>
@@ -269,7 +269,7 @@ window.renderCartView = function () {
   return `
     <div class="pb-[calc(12rem+env(safe-area-inset-bottom,0px))]">
       <!-- TopAppBar -->
-      <header class="bg-background flex justify-between items-center w-full px-5 py-3.5 sticky top-0 z-30">
+      <header class="bg-background/80 backdrop-blur-md flex justify-between items-center w-full px-5 py-3.5 sticky top-0 z-30">
         <div class="flex items-center gap-2.5">
           <button onclick="window.shoppingStore.setActiveTab('home')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-95 transition-all" title="Voltar ao início">
             <span class="material-symbols-outlined text-[22px]">arrow_back</span>
@@ -292,23 +292,25 @@ window.renderCartView = function () {
 
       <!-- Main Content Canvas -->
       <main class="px-5 pt-1 space-y-4">
-        <!-- List Selector Dropdown / Context Card -->
-        <div class="bg-surface-container rounded-2xl p-3.5 flex justify-between items-center border border-outline-variant/40">
-          <div class="flex items-center gap-2.5 text-on-surface font-body-lg">
-            <div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center text-primary">
+        <!-- List Selector Dropdown / Context Card (Constrained with overflow protection) -->
+        <div class="bg-surface-container rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-2.5 border border-outline-variant/40 w-full max-w-full box-border overflow-hidden shadow-sm">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1 overflow-hidden">
+            <div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center text-primary shrink-0">
               <span class="material-symbols-outlined text-[18px]">calendar_today</span>
             </div>
-            <div>
-              <span class="font-bold text-sm text-on-surface block">${list.title}</span>
-              <span class="text-[11px] text-on-surface-variant">${list.status !== 'completed' ? 'Lista ativa de compras' : 'Lista finalizada'}</span>
+            <div class="min-w-0 flex-1 overflow-hidden">
+              <span class="font-bold text-sm text-on-surface block truncate" title="${list.title}">${list.title}</span>
+              <span class="text-[11px] text-on-surface-variant block truncate">${list.status !== 'completed' ? 'Lista ativa de compras' : 'Lista finalizada'}</span>
             </div>
           </div>
           
-          <select onchange="window.shoppingStore.setActiveList(this.value)" class="bg-surface-variant text-on-surface text-xs font-bold py-1.5 px-3 rounded-xl border-none focus:outline-none cursor-pointer">
-            ${[...(store.state.lists || [])].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).map(l => `
-              <option value="${l.id}" ${l.id === list.id ? 'selected' : ''}>${l.title}${l.status === 'completed' ? ' (Finalizada)' : ''}</option>
-            `).join('')}
-          </select>
+          <div class="relative shrink-0 max-w-[130px] sm:max-w-[170px] min-w-0">
+            <select onchange="window.shoppingStore.setActiveList(this.value)" class="w-full max-w-full bg-surface-variant text-on-surface text-xs font-bold py-1.5 pl-2.5 pr-2 rounded-xl border-none focus:outline-none cursor-pointer truncate appearance-none text-ellipsis">
+              ${[...(store.state.lists || [])].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).map(l => `
+                <option value="${l.id}" ${l.id === list.id ? 'selected' : ''}>${l.title}${l.status === 'completed' ? ' (Finalizada)' : ''}</option>
+              `).join('')}
+            </select>
+          </div>
         </div>
 
         <!-- Search Bar -->

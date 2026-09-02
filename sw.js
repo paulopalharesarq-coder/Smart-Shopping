@@ -3,7 +3,7 @@
  * Provides robust offline functionality, instant loads and asset caching.
  */
 
-const CACHE_NAME = 'minhas-compras-v202609012219';
+const CACHE_NAME = 'minhas-compras-v202609021549';
 
 const PRECACHE_ASSETS = [
   './',

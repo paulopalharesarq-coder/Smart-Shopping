@@ -11,7 +11,7 @@ window.renderSettingsView = function () {
   return `
     <div class="pb-28">
       <!-- TopAppBar -->
-      <header class="bg-background flex justify-between items-center w-full px-5 py-3.5 sticky top-0 z-30">
+      <header class="bg-background/80 backdrop-blur-md flex justify-between items-center w-full px-5 py-3.5 sticky top-0 z-30">
         <div class="flex items-center gap-2.5">
           <button onclick="window.shoppingStore.setActiveTab('home')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-95 transition-all" title="Voltar">
             <span class="material-symbols-outlined text-[22px]">arrow_back</span>
@@ -21,17 +21,17 @@ window.renderSettingsView = function () {
       </header>
 
       <main class="px-5 py-2 space-y-6">
-        <!-- User Profile Card -->
+        <!-- User Profile Card with App Icon -->
         <div class="bg-primary-fixed rounded-2xl p-4 flex items-center gap-4 border border-primary-fixed-dim/50 shadow-sm">
-          <div class="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xl shadow-inner">
-            <span class="material-symbols-outlined text-[28px]">person</span>
+          <div class="w-14 h-14 rounded-2xl overflow-hidden shadow-md flex items-center justify-center bg-surface-container-lowest shrink-0 border border-outline-variant/30">
+            <img src="./icons/icon-192.png" alt="Smart Shopping" class="w-full h-full object-cover" />
           </div>
-          <div class="flex-1">
-            <h2 class="font-headline-md text-base font-bold text-on-surface">Minhas Compras Mensais</h2>
-            <p class="text-xs text-on-surface-variant mt-0.5">Gerenciador Inteligente de Compras</p>
+          <div class="flex-1 min-w-0">
+            <h2 class="font-headline-md text-base font-bold text-on-surface truncate">Minhas Compras Mensais</h2>
+            <p class="text-xs text-on-surface-variant mt-0.5 truncate">Gerenciador Inteligente de Compras</p>
             <span class="inline-flex items-center gap-1 text-[11px] font-bold text-primary mt-1">
-              <span class="material-symbols-outlined text-[13px]">palette</span>
-              Design: Lumina Lifestyle
+              <span class="material-symbols-outlined text-[13px]">verified</span>
+              Smart Shopping • PWA
             </span>
           </div>
         </div>

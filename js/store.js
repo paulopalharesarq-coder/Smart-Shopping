@@ -11,65 +11,65 @@ const DEFAULT_CATEGORIES = [
     id: 'acougue',
     name: 'Açougue',
     icon: 'set_meal',
-    bgColor: '#ffdad6', // error-container
-    textColor: '#b4271d', // tertiary
-    borderColor: '#ffb4a9'
+    bgColor: '#fee2e2', // Crisp red
+    textColor: '#b91c1c',
+    borderColor: '#fecaca'
   },
   {
     id: 'hortifruti',
     name: 'Hortifruti',
     icon: 'eco',
-    bgColor: '#e8f5e9', // soft green pastel
-    textColor: '#006d37', // secondary
-    borderColor: '#a3e9b8'
+    bgColor: '#dcfce7', // Crisp leaf green
+    textColor: '#15803d',
+    borderColor: '#bbf7d0'
   },
   {
     id: 'mercearia',
     name: 'Mercearia',
     icon: 'shopping_cart',
-    bgColor: '#feeadf', // surface-container
-    textColor: '#944a00', // primary
+    bgColor: '#feeadf', // Soft beige
+    textColor: '#944a00',
     borderColor: '#f2dfd4'
   },
   {
     id: 'laticinios',
     name: 'Laticínios',
     icon: 'water_drop',
-    bgColor: '#e3f2fd', // soft blue pastel
-    textColor: '#1976d2',
-    borderColor: '#bbdefb'
+    bgColor: '#e0f2fe', // Sky blue
+    textColor: '#0369a1',
+    borderColor: '#bae6fd'
   },
   {
     id: 'padaria',
     name: 'Padaria & Confeitaria',
     icon: 'bakery_dining',
-    bgColor: '#fff3e0',
-    textColor: '#e65100',
-    borderColor: '#ffe0b2'
+    bgColor: '#fef08a', // Sunny yellow (distinct from beige)
+    textColor: '#854d0e',
+    borderColor: '#fde047'
   },
   {
     id: 'bebidas',
     name: 'Bebidas',
     icon: 'local_bar',
-    bgColor: '#f3e5f5',
-    textColor: '#7b1fa2',
-    borderColor: '#e1bee7'
+    bgColor: '#f3e8ff', // Royal lavender
+    textColor: '#7e22ce',
+    borderColor: '#e9d5ff'
   },
   {
     id: 'limpeza',
     name: 'Limpeza',
     icon: 'cleaning_services',
-    bgColor: '#e0f7fa',
-    textColor: '#00838f',
-    borderColor: '#b2ebf2'
+    bgColor: '#ccfbf1', // Crisp teal (distinct from leaf green)
+    textColor: '#0f766e',
+    borderColor: '#99f6e4'
   },
   {
     id: 'higiene',
     name: 'Higiene & Cuidados',
     icon: 'spa',
-    bgColor: '#fce4ec',
-    textColor: '#c2185b',
-    borderColor: '#f8bbd0'
+    bgColor: '#fce7f3', // Crisp pink (distinct from red)
+    textColor: '#be185d',
+    borderColor: '#fbcfe8'
   }
 ];
 
