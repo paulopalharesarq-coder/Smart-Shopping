@@ -108,8 +108,8 @@ window.renderCategoriesView = function () {
 
   return `
     <div class="pb-28">
-      <!-- TopAppBar (Solid & Opaque) -->
-      <header class="bg-background flex justify-between items-center w-full px-5 py-3.5 sticky top-0 z-30 border-b border-outline-variant/20">
+      <!-- TopAppBar (Solid, Opaque & Seamless) -->
+      <header class="bg-background flex justify-between items-center w-full px-5 py-3.5 sticky top-0 z-30">
         <div class="flex items-center gap-2.5">
           <button onclick="window.shoppingStore.setActiveTab('home')" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-95 transition-all" title="Voltar">
             <span class="material-symbols-outlined text-[22px]">arrow_back</span>

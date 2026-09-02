@@ -42,12 +42,19 @@ views.forEach(v => {
     content.includes('<header class="bg-background') || content.includes('<header class="flex justify-between items-center w-full px-5 py-4 bg-background'),
     `${v.name} header possui classe sólida bg-background`
   );
+  assert(
+    !content.includes('<header') || !content.match(/<header[^>]*border-b/i),
+    `${v.name} header NÃO possui classe border-b ou linha divisória`
+  );
 });
 
 const cssContent = fs.readFileSync('css/app.css', 'utf8');
 assert(
-  cssContent.includes('header.bg-background') && cssContent.includes('backdrop-filter: none !important;'),
-  'css/app.css garante backdrop-filter: none e background-color sólido nos headers'
+  cssContent.includes('header.bg-background') && 
+  cssContent.includes('border: none !important;') && 
+  cssContent.includes('border-bottom: none !important;') &&
+  cssContent.includes('backdrop-filter: none !important;'),
+  'css/app.css garante ausência total de bordas, linhas e filtros no cabeçalho'
 );
 
 // 2. Mapeamento de Cores dos Cards no Tema Escuro

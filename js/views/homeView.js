@@ -136,8 +136,8 @@ window.renderHomeView = function () {
 
   return `
     <div class="pb-36">
-      <!-- TopAppBar (Solid & Opaque) -->
-      <header class="flex justify-between items-center w-full px-5 py-4 bg-background sticky top-0 z-30 border-b border-outline-variant/20">
+      <!-- TopAppBar (Solid, Opaque & Seamless) -->
+      <header class="flex justify-between items-center w-full px-5 py-4 bg-background sticky top-0 z-30">
         <div>
           <span class="text-[11px] font-bold uppercase tracking-wider text-primary">Smart Shopping</span>
           <h1 class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface font-bold">Minhas Compras</h1>
