@@ -6,16 +6,15 @@
   <title>Minhas Compras • Smart Shopping Manager</title>
   <meta name="description" content="Gerenciador inteligente de compras mensais com comparativo de preços históricos e design Lumina Lifestyle.">
   
-  <!-- PWA & Mobile Web Meta Tags -->
+  <!-- PWA & Mobile Web Meta Tags with Dynamic Status Bar Sync -->
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#fff8f5" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#18120d" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" id="app-theme-color" content="#fff8f5">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" id="app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Minhas Compras">
   
-  <!-- Immediate Theme Initialization (Prevents FOUC) -->
+  <!-- Immediate Theme & Status Bar Initialization (Prevents FOUC & Syncs iOS Status Bar) -->
   <script>
     (function () {
       try {
@@ -29,6 +28,10 @@
           document.documentElement.classList.remove('dark');
           document.documentElement.classList.add('light');
         }
+        const themeColorMeta = document.getElementById('app-theme-color');
+        if (themeColorMeta) themeColorMeta.setAttribute('content', isDark ? '#18120d' : '#fff8f5');
+        const statusMeta = document.getElementById('app-status-bar-style');
+        if (statusMeta) statusMeta.setAttribute('content', isDark ? 'black' : 'default');
       } catch (e) {}
     })();
   </script>

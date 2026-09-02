@@ -71,8 +71,8 @@ assert(
   'Seletor de lista no topo do carrinho possui proteção contra overflow'
 );
 assert(
-  cartViewContent.includes('backdrop-blur-md'),
-  'Cabeçalho do carrinho possui backdrop blur'
+  !cartViewContent.includes('backdrop-blur-md sticky top-0') && cartViewContent.includes('bg-background'),
+  'Cabeçalho do carrinho é 100% sólido e opaco (sem backdrop blur)'
 );
 
 // 3. Validar Ajustes / Perfil (settingsView.js)
@@ -84,8 +84,8 @@ assert(
   'Imagem de perfil em Ajustes utiliza o ícone oficial do app'
 );
 assert(
-  settingsViewContent.includes('backdrop-blur-md'),
-  'Cabeçalho de Ajustes possui backdrop blur'
+  !settingsViewContent.includes('backdrop-blur-md sticky top-0') && settingsViewContent.includes('bg-background'),
+  'Cabeçalho de Ajustes é 100% sólido e opaco (sem backdrop blur)'
 );
 
 // 4. Validar Modais (modals.js)

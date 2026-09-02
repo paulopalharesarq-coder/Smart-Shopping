@@ -130,6 +130,48 @@ function renderApp() {
   `;
 }
 
+// Dynamic Status Bar & Theme-Color Synchronizer for iOS & Android PWAs
+function updateStatusBarTheme(isDark) {
+  if (typeof document === 'undefined' || typeof document.querySelector !== 'function') return;
+
+  const lightColor = '#fff8f5';
+  const darkColor = '#18120d';
+  const effectiveColor = isDark ? darkColor : lightColor;
+
+  // 1. Dynamic theme-color meta
+  let themeColorMeta = document.getElementById('app-theme-color') || document.querySelector('meta[name="theme-color"]');
+  if (!themeColorMeta) {
+    themeColorMeta = document.createElement('meta');
+    themeColorMeta.name = 'theme-color';
+    themeColorMeta.id = 'app-theme-color';
+    document.head.appendChild(themeColorMeta);
+  }
+  if (typeof themeColorMeta.removeAttribute === 'function') {
+    themeColorMeta.removeAttribute('media');
+  }
+  if (typeof themeColorMeta.setAttribute === 'function') {
+    themeColorMeta.setAttribute('content', effectiveColor);
+  }
+
+  // 2. Dynamic apple-mobile-web-app-status-bar-style for iOS PWA
+  let appleStatusBarMeta = document.getElementById('app-status-bar-style') || document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if (!appleStatusBarMeta) {
+    appleStatusBarMeta = document.createElement('meta');
+    appleStatusBarMeta.name = 'apple-mobile-web-app-status-bar-style';
+    appleStatusBarMeta.id = 'app-status-bar-style';
+    document.head.appendChild(appleStatusBarMeta);
+  }
+  if (typeof appleStatusBarMeta.setAttribute === 'function') {
+    appleStatusBarMeta.setAttribute('content', isDark ? 'black' : 'default');
+  }
+
+  // 3. Dynamic color-scheme meta
+  let colorSchemeMeta = document.querySelector('meta[name="color-scheme"]');
+  if (colorSchemeMeta && typeof colorSchemeMeta.setAttribute === 'function') {
+    colorSchemeMeta.setAttribute('content', isDark ? 'dark' : 'light');
+  }
+}
+
 // Universal Theme Engine: Supports 'system' (auto), 'light', and 'dark'
 window.applyThemePreference = function (preference) {
   if (typeof document === 'undefined') return;
@@ -156,6 +198,9 @@ window.applyThemePreference = function (preference) {
     document.documentElement.classList.remove('dark');
     document.documentElement.classList.add('light');
   }
+
+  // Real-time synchronization of iOS/Android status bar and browser chrome
+  updateStatusBarTheme(isDark);
 };
 
 function initThemeManager() {
